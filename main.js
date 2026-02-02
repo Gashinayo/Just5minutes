@@ -3,15 +3,15 @@
 const VALID = {
     char: [
         's_m_base.png', 's_f_base.png',
-        'skin_m_001.png', 'skin_m_002.png', 'skin_m_003.png', 'skin_m_004.png', 'skin_m_005.png', 'skin_m_006.png', 'skin_m_007.png', 'skin_m_008.png',
-        'skin_f_001.png', 'skin_f_002.png', 'skin_f_003.png', 'skin_f_004.png', 'skin_f_005.png', 'skin_f_006.png', 'skin_f_007.png', 'skin_f_008.png'
+        'skin_m_001.png', 'skin_m_002.png', 'skin_m_003.png', //'skin_m_004.png', 'skin_m_005.png', 'skin_m_006.png', 'skin_m_007.png', 'skin_m_008.png',
+        'skin_f_001.png', 'skin_f_002.png', 'skin_f_003.png', //'skin_f_004.png', 'skin_f_005.png', 'skin_f_006.png', 'skin_f_007.png', 'skin_f_008.png'
     ],
     bg: [
-        'bg_000.png', 'bg_001.png', 'bg_002.png', 'bg_003.png', 'bg_004.png', 'bg_005.png',
-        'bg_006.png', 'bg_007.png', 'bg_008.png', 'bg_009.png', 'bg_010.png',
-        'bg_011.png', 'bg_012.png', 'bg_013.png', 'bg_014.png', 'bg_015.png', 'bg_016.png', 'bg_017.png',
-        'bg_018.png', 'bg_019.png', 'bg_020.png',
-        'bg_021.png', 'bg_022.png', 'bg_023.png', 'bg_024.png'
+        'bg_000.png', 'bg_001.png', 'bg_002.png', 'bg_003.png', //'bg_004.png', 'bg_005.png',
+        // 'bg_006.png', 'bg_007.png', 'bg_008.png', 'bg_009.png', 'bg_010.png',
+        // 'bg_011.png', 'bg_012.png', 'bg_013.png', 'bg_014.png', 'bg_015.png', 'bg_016.png', 'bg_017.png',
+        // 'bg_018.png', 'bg_019.png', 'bg_020.png',
+        // 'bg_021.png', 'bg_022.png', 'bg_023.png', 'bg_024.png'
     ]
 };
 // [Achievement System] 40 Custom Titles based on User Request
