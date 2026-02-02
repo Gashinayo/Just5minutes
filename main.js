@@ -1022,7 +1022,8 @@ function updateFeverUI() {
             // Ideally we check isDeepWork to know if we should revert to white or something else.
             // But main loop updates display constantly.
             if (timeEl) {
-                timeEl.style.color = '#fff';
+                // [Fix] Don't force white color, let CSS handle it (Blue when idle, White when running)
+                timeEl.style.color = '';
                 timeEl.style.textShadow = 'none';
             }
         }
