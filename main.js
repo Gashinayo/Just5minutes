@@ -75,6 +75,14 @@ function getLocalISODate(d = new Date()) {
     return new Date(d.getTime() - offset).toISOString().split('T')[0];
 }
 
+// [v10.2] Helper for Consecutive Days
+function isConsecutive(lastDateStr) {
+    if (!lastDateStr) return false;
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    return lastDateStr === yesterday;
+}
+
+
 // Global Variables Declaration
 // [v15.0] Quest & Event System Data
 let quests;
