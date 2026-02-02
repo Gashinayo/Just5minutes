@@ -180,7 +180,7 @@ function initApp() {
 
     saveStats();
     updateDisp();
-    renderSkinList();
+    renderSkins(); // [Fix] Correct function name
     loadAchUI();
     document.getElementById('pos-' + current.titlePos).classList.add('active');
     document.getElementById('title-color-picker').value = current.titleColor;
