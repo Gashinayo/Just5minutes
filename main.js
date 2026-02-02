@@ -648,32 +648,55 @@ const cc = document.getElementById('char-container');
 let dOff = { x: 0, y: 0 };
 
 // [v10.2 Fix] Safe Event Listeners for Drag (No conflict with Idle Timer)
-cc.addEventListener('mousedown', (e) => {
+// [v10.2 Fix] Safe Event Listeners for Drag (No conflict with Idle Timer)
+// [v14.0] Mobile Touch Support
+const startDrag = (e) => {
+    // Prevent default touch actions (scrolling) if it's a touch event
+    if (e.type === 'touchstart') e.preventDefault();
+
     stats.totalClicks++; unlockDirect(35); checkAchievements();
     let r = cc.getBoundingClientRect();
-    dOff.x = e.clientX - r.left;
-    dOff.y = e.clientY - r.top;
+
+    // Unify Mouse/Touch coordinates
+    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+    dOff.x = clientX - r.left;
+    dOff.y = clientY - r.top;
 
     const onMove = (e) => {
-        cc.style.left = (e.clientX - dOff.x) + 'px';
-        cc.style.top = (e.clientY - dOff.y) + 'px';
+        const cx = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const cy = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+        cc.style.left = (cx - dOff.x) + 'px';
+        cc.style.top = (cy - dOff.y) + 'px';
         cc.style.bottom = 'auto';
         cc.style.transform = 'none';
 
         // Check Corner (37)
-        if (e.clientX < 50 || e.clientX > window.innerWidth - 50) unlockDirect(37);
-        resetIdleTimer(); // Reset idle timer while dragging
+        if (cx < 50 || cx > window.innerWidth - 50) unlockDirect(37);
+        resetIdleTimer();
     };
 
     const onUp = () => {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onUp);
         saveStats();
     };
 
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-});
+    if (e.type === 'mousedown') {
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    } else {
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend', onUp);
+    }
+};
+
+cc.addEventListener('mousedown', startDrag);
+cc.addEventListener('touchstart', startDrag, { passive: false });
 
 // [v10.2 Fix] Ensure DOM is ready before init
 // [v11.1] Sound Engine (Web Audio API)

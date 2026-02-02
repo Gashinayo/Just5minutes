@@ -367,6 +367,8 @@ body {
     height: 130px;
     z-index: 100;
     cursor: grab;
+    touch-action: none;
+    /* [v14.0] Prevent scroll while dragging */
 }
 
 .char-img {
