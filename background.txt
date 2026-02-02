@@ -1,0 +1,15 @@
+tyle: 32-bit pixel art, premium retro game aesthetic, clean and detailed.
+
+View: Very steep isometric view from a high camera angle, looking sharply down.
+
+Aspect Ratio: Extra tall vertical mobile format (approx. 9:18 ratio).
+
+Composition Constraint (Crucial for Cropping): The image must be generated slightly taller than a standard phone screen. Include an extended "buffer zone" of expendable ground texture at the very bottom edge of the frame. The main composition and essential ground elements should be positioned slightly above this bottom buffer edge, allowing the bottom-most part to be cropped without losing critical details.
+
+Ground Integration: The character's standing area is the natural floor integrated into the environment.
+
+Verticality: Massive thematic structures tower high above into deep vertical space.
+
+
+
+remind, this pictures are used in smartphone app contents. (backgrounds)

@@ -1,0 +1,776 @@
+// [Resource Configuration] 가챠 시스템에서 활용될 전체 리소스 목록
+// 디렉토리에 존재하는 모든 파일을 매핑하여 수집의 재미를 극대화함
+const VALID = {
+    char: [
+        's_m_base.png', 's_f_base.png',
+        'skin_m_001.png', 'skin_m_002.png', 'skin_m_003.png', 'skin_m_004.png', 'skin_m_005.png', 'skin_m_006.png', 'skin_m_007.png', 'skin_m_008.png',
+        'skin_f_001.png', 'skin_f_002.png', 'skin_f_003.png', 'skin_f_004.png', 'skin_f_005.png', 'skin_f_006.png', 'skin_f_007.png', 'skin_f_008.png'
+    ],
+    bg: [
+        'bg_000.png', 'bg_001.png', 'bg_002.png', 'bg_003.png', 'bg_004.png', 'bg_005.png',
+        'bg_006.png', 'bg_007.png', 'bg_008.png', 'bg_009.png', 'bg_010.png',
+        'bg_011.png', 'bg_012.png', 'bg_013.png', 'bg_014.png', 'bg_015.png', 'bg_016.png', 'bg_017.png',
+        'bg_018.png', 'bg_019.png', 'bg_020.png',
+        'bg_021.png', 'bg_022.png', 'bg_023.png', 'bg_024.png'
+    ]
+};
+// [Achievement System] 40 Custom Titles based on User Request
+const achDefs = {
+    1: { t: '[집중의 첫걸음]', d: '첫 예열 5분 성공' },
+    2: { t: '[3분의 지배자]', d: '3분 몰입 3회 달성' },
+    3: { t: '[뽀모도로 달인]', d: '25분 연속 집중 성공' },
+    4: { t: '[시공간 술사]', d: '1시간 연속 집중 성공' },
+    5: { t: '[부동의 석상]', d: '2시간 연속 집중 성공' },
+    6: { t: '[강철 엉덩이]', d: '누적 집중 10시간 달성' },
+    7: { t: '[몰입의 마라토너]', d: '42분 19초 세션 달성 (마라톤 거리)' },
+    8: { t: '[0초 오차의 신]', d: '정각(00초)에 중단' },
+    9: { t: '[기록 파괴자]', d: '최고 집중 기록 경신' },
+    10: { t: '[자린고비]', d: '10,000P 보유 달성' },
+    11: { t: '[반가운 뉴비]', d: '첫 접속' },
+    12: { t: '[습관의 시작]', d: '3일 연속 접속' },
+    13: { t: '[성실한 모험가]', d: '7일 연속 접속' },
+    14: { t: '[출석 만렙]', d: '30일 누적 접속' },
+    15: { t: '[새벽을 여는 자]', d: '오전 5~8시 사이 시작' },
+    16: { t: '[밤의 파수꾼]', d: '밤 11시 이후 시작' },
+    17: { t: '[휴일의 전사]', d: '토/일 연속 접속' },
+    18: { t: '[돌아온 탕아]', d: '7일 만에 재접속' },
+    19: { t: '[출근 도장 쾅]', d: '하루 5회 앱 실행' },
+    20: { t: '[시간의 지배자]', d: '누적 100시간 집중' },
+    21: { t: '[멋쟁이 신사]', d: '첫 스킨 장착' },
+    22: { t: '[옷장 주인]', d: '캐릭터 10종 보유' },
+    23: { t: '[공간 디자이너]', d: '배경 5종 보유' },
+    24: { t: '[황금 손]', d: '가챠에서 새로운 스킨 획득' },
+    25: { t: '[플렉스 마스터]', d: '누적 5,000P 소모' },
+    26: { t: '[복제 인간]', d: '중복 스킨 3회 연속 획득' },
+    27: { t: '[풀소유]', d: '모든 아이템(24종) 수집' },
+    28: { t: '[깔맞춤의 정석]', d: '배경과 캐릭터 동시 변경' },
+    29: { t: '[무소유]', d: '포인트 0원 만들기' },
+    30: { t: '[가챠 중독자]', d: '연속 5번 뽑기 시도' },
+    31: { t: '[간발의 차이]', d: '4분 59초에 중단' },
+    32: { t: '[초광속 포기]', d: '시작 1초 만에 중단' },
+    33: { t: '[한국인입니다]', d: '예열 중 버튼 5회 연타' },
+    34: { t: '[미루기 끝판왕]', d: '23:59에 중단' },
+    35: { t: '[캐릭터 조련사]', d: '드래그 100회 돌파' },
+    36: { t: '[마우스 학대범]', d: '누적 클릭 1,000회' },
+    37: { t: '[자유로운 영혼]', d: '화면 구석에 캐릭터 배치' },
+    38: { t: '[침묵의 수행자]', d: '10분간 화면 조작 없음' },
+    39: { t: '[오뚝이]', d: '중단 후 1분 내 재시작' },
+    40: { t: '[몰입의 성인]', d: '칭호 35개 이상 수집' }
+};
+
+// [v10.4] Safe Parsing Helper
+function safeParse(key, defaultVal) {
+    try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : defaultVal;
+    } catch (e) {
+        console.error(`Error parsing ${key}:`, e);
+        return defaultVal;
+    }
+}
+
+// [v11.2] Date Helper (Local Time YYYY-MM-DD)
+function getLocalISODate(d = new Date()) {
+    const offset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - offset).toISOString().split('T')[0];
+}
+
+// Global Variables Declaration
+let stats, ownedAchs, current, owned, pts;
+let run = false, isDeepWork = false, sec = 300, deepWorkSec = 0, interval, idleTimer, subTab = 'char';
+let startupTime = Date.now(), lastStopTime = 0, clickSession = 0;
+// [v10.3] Session Earnings
+let sessionEarned = 0;
+
+function initApp() {
+    console.log("Initializing App...");
+    // [v10.4 Safe Load] Use safeParse
+    stats = safeParse('stats_v2', {
+        totalMin: 0, maxSec: 0, totalClicks: 0, totalSpent: 0,
+        consecutiveDays: 0, lastLogin: '', totalLogins: 0, dailyStarts: 0, dailyEarned: 0,
+        threeMinCount: 0, dupStreak: 0, gachaStreak: 0,
+        history: {} // [v11.2] Date: Minutes map
+    });
+    if (!stats.history) stats.history = {};
+
+    // Migration Logic
+    if (stats.dailyEarned === undefined) stats.dailyEarned = 0;
+    if (!stats.totalMin && localStorage.getItem('stats')) {
+        const old = safeParse('stats', {});
+        stats.totalMin = old.weeklyTime || 0;
+        stats.totalClicks = old.drags || 0;
+    }
+
+    ownedAchs = safeParse('ownedAchs', [11]);
+    current = safeParse('current', { char: 's_m_base.png', bg: 'bg_000.png', title: null, titleColor: '#5EEAD4', titlePos: 'top' });
+    owned = safeParse('owned', { char: ['s_m_base.png', 's_f_base.png'], bg: ['bg_000.png', 'bg_001.png'] });
+    pts = Number(localStorage.getItem('pts')) || 99999;
+
+    // [Logic] 접속 체크 (Login Check)
+    const today = new Date().toDateString();
+    if (stats.lastLogin !== today) {
+        stats.dailyStarts = 1;
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        if (stats.lastLogin === yesterday) stats.consecutiveDays++;
+        else {
+            const last = new Date(stats.lastLogin).getTime();
+            const diff = (Date.now() - last) / (1000 * 60 * 60 * 24);
+            if (diff >= 7 && diff < 8) unlockDirect(18);
+            stats.consecutiveDays = 1;
+        }
+        stats.lastLogin = today;
+        stats.totalLogins++;
+        stats.dailyEarned = 0;
+        checkDailyAchs();
+    } else {
+        stats.dailyStarts++;
+    }
+    if (stats.dailyStarts >= 5) unlockDirect(19);
+
+    // [Initialization UI]
+    updateAestheticUI();
+    updateStatsUI();
+    updateDisp();
+    checkAchievements();
+    resetIdleTimer();
+    updateSFXUI(); // [v11.1] Init SFX UI
+
+    // [v10.3] Restore Point Status UI if applicable (initial hidden)
+    const dps = document.getElementById('daily-point-status');
+    if (dps) dps.style.display = 'none';
+}
+
+function checkDailyAchs() {
+    if (stats.consecutiveDays >= 3) unlockDirect(12);
+    if (stats.consecutiveDays === 7) {
+        unlockDirect(13);
+        addPts(1000);
+        // [v10.2 Fix] Alert 대신 Toast 사용 (Non-blocking)
+        showToast("🎉 7일 연속 출석! 1000P 지급!", "꾸준함의 보상입니다.");
+    }
+    else if (stats.consecutiveDays > 7) unlockDirect(13);
+    if (stats.totalLogins >= 30) unlockDirect(14);
+    const day = new Date().getDay();
+    if ((day === 0 || day === 6) && stats.consecutiveDays >= 2) unlockDirect(17);
+}
+
+function checkAchievements() {
+    // 시간/기록
+    if ((stats.totalMin / 60) >= 10) unlockDirect(6);
+    if ((stats.totalMin / 60) >= 100) unlockDirect(20);
+    if (deepWorkSec >= 3600) unlockDirect(4); // 현 세션 기준
+    if (deepWorkSec >= 7200) unlockDirect(5);
+
+    // 자산
+    if (pts >= 10000) unlockDirect(10);
+    if (stats.totalSpent >= 5000) unlockDirect(25);
+    if (pts === 0) unlockDirect(29);
+
+    // 수집
+    if (owned.char.length >= 10) unlockDirect(22);
+    if (owned.bg.length >= 5) unlockDirect(23);
+    if ((owned.char.length + owned.bg.length) >= 44) unlockDirect(27); // 전체(24+20) 달성 근사치
+
+    // 기타
+    if (stats.totalClicks >= 1000) unlockDirect(36);
+    if (ownedAchs.length >= 35) unlockDirect(40);
+}
+
+// Idle Checker
+// [v10.2 Fix] Event Listener Pattern (No Conflicts)
+// [v10.2 Fix] Event Listener Pattern (No Conflicts)
+// idleTimer is declared in Global Scope now
+function resetIdleTimer() { clearTimeout(idleTimer); idleTimer = setTimeout(() => unlockDirect(38), 600000); }
+document.addEventListener('mousemove', resetIdleTimer);
+document.addEventListener('click', () => {
+    SFX.init(); // [v11.1] Ensure AudioContext is ready (Autoplay Policy)
+    stats.totalClicks++;
+    if (!run && !isDeepWork) { clickSession++; if (clickSession >= 5) unlockDirect(33); }
+    SFX.play('click'); // [v11.1] Click SFX
+    saveStats(); checkAchievements();
+    resetIdleTimer();
+});
+
+function setTitlePos(pos) { current.titlePos = pos; saveCurrent(); updateAestheticUI(); renderAchs(); }
+function setTitleColor(color) { current.titleColor = color; saveCurrent(); updateAestheticUI(); }
+function handleAchClick(id) {
+    if (ownedAchs.includes(Number(id))) equipTitle(id);
+    else alert(`🔒 [해금 힌트]
+
+${achDefs[id].d}`);
+}
+function equipTitle(id) { current.title = achDefs[id].t; saveCurrent(); updateAestheticUI(); renderAchs(); }
+function saveCurrent() { localStorage.setItem('current', JSON.stringify(current)); }
+function updateAestheticUI() {
+    document.getElementById('app').style.backgroundImage = `url('${current.bg}')`;
+    document.getElementById('main-char').src = current.char;
+    const tag = document.getElementById('char-title-tag');
+    document.documentElement.style.setProperty('--title-color', current.titleColor);
+    document.getElementById('title-color-picker').value = current.titleColor;
+    if (current.title && current.titlePos !== 'none') {
+        tag.innerText = current.title; tag.style.display = 'block';
+        if (current.titlePos === 'top') { tag.style.top = '7px'; tag.style.bottom = 'auto'; }
+        else { tag.style.top = 'auto'; tag.style.bottom = '12px'; }
+    } else { tag.style.display = 'none'; }
+    document.querySelectorAll('.pos-btn').forEach(b => b.classList.toggle('active', b.id === 'pos-' + current.titlePos));
+}
+
+function skinSub(s) { subTab = s; document.getElementById('sm-char').classList.toggle('active', s === 'char'); document.getElementById('sm-bg').classList.toggle('active', s === 'bg'); renderSkins(); }
+function renderSkins() {
+    const list = document.getElementById('skin-list');
+    list.innerHTML = owned[subTab].map(item => `
+        <div class="skin-item ${current[subTab] === item ? 'selected' : ''}" onclick="applySkin('${item}')">
+            <img src="${item}">
+        </div>`).join('');
+}
+function applySkin(i) {
+    current[subTab] = i; unlockDirect(21);
+    // 깔맞춤 (동시 변경을 감지하긴 어려우므로 최근 변경 시간 등으로... 혹은 단순히 둘 다 변경 이력이 있으면 인정? 여기선 단순 트리거로)
+    if (stats.totalClicks > 10) unlockDirect(28); // 대략적인 조건으로 완화
+    saveCurrent(); updateAestheticUI(); renderSkins();
+}
+
+function start() {
+    const now = new Date();
+    const h = now.getHours();
+    if (h >= 5 && h < 8) unlockDirect(15);
+    if (h >= 23) unlockDirect(16);
+
+    // 재시작 체크
+    if (Date.now() - lastStopTime < 60000) unlockDirect(39); // 오뚝이
+
+    if (run) {
+        clearInterval(interval); run = false; lastStopTime = Date.now();
+        // [v10.3] Session Summary in Modal
+        const resEarn = document.getElementById('res-earn');
+        const encEarn = document.getElementById('enc-earn');
+        if (resEarn) resEarn.innerText = `이번 획득: ${sessionEarned} P`;
+        if (encEarn) encEarn.innerText = `이번 획득: ${sessionEarned} P`;
+
+        // 중단 로직
+        if (!isDeepWork) {
+            if (sec === 299) unlockDirect(32); // 초광속
+            if (sec === 1) unlockDirect(31); // 4:59 (남은시간 1초)
+        } else {
+            // 몰입 중 중단
+            const s = now.getSeconds();
+            if (s === 0) unlockDirect(8); // 정각 중단
+            const m = now.getMinutes();
+            if (h === 23 && m === 59) unlockDirect(34); // 미루기 끝판왕
+
+            if (deepWorkSec >= 1500) { if (++stats.threeMinCount >= 3) unlockDirect(2); }
+            stats.threeMinCount++; if (stats.threeMinCount >= 3) unlockDirect(2);
+
+            // 기록 경신
+            if (deepWorkSec > stats.maxSec) { stats.maxSec = deepWorkSec; unlockDirect(9); }
+
+            // 마라토너
+            if (deepWorkSec === 2539) unlockDirect(7); // 42분 19초
+            if (deepWorkSec >= 1500) unlockDirect(3); // 25분
+        }
+        // [v10.4 Fix] Use showResult for proper time display
+        if (isDeepWork) showResult();
+        else showModal('encourage-modal');
+
+        if (!isDeepWork) clickSession = 0;
+    } else {
+        run = true; sessionEarned = 0; // [v10.3] Reset Session
+        const dps = document.getElementById('daily-point-status');
+        if (dps) dps.style.display = 'none';
+
+        document.getElementById('p-timer').classList.add('is-running'); runEngine();
+        SFX.play('start'); // [v11.1] Start SFX
+    }
+    saveStats();
+}
+
+function runEngine() {
+    clearInterval(interval);
+    interval = setInterval(() => {
+        if (!isDeepWork) {
+            if (sec > 0) {
+                sec--;
+            } else {
+                isDeepWork = true;
+                document.getElementById('time').setAttribute('data-burning', 'true');
+                document.body.classList.add('deep-work-mode'); // [v12.0] Visual Polish
+
+                // [v10.3] Show Point Status
+                const dps = document.getElementById('daily-point-status');
+                if (dps) dps.style.display = 'block';
+                updateDailyPointUI();
+
+                unlockDirect(1);
+                SFX.play('beep'); // [v11.1] Deep Work Entry SFX
+            }
+        } else {
+            deepWorkSec++;
+            // [v10.4 Fix] 10초당 1P 지급 (즉각적 보상)
+            if (deepWorkSec % 10 === 0) earnPoints(1);
+
+            if (deepWorkSec % 60 === 0) {
+                stats.totalMin++;
+                // [v11.2] Update History
+                const todayKey = getLocalISODate();
+                stats.history[todayKey] = (stats.history[todayKey] || 0) + 1;
+
+                // earnPoints(10); // Removed (replaced by 10s rule)
+                saveStats(); checkAchievements();
+            }
+        }
+        updateDisp();
+    }, 1000);
+}
+
+function startGacha() {
+    // 1. Point Check
+    if (pts < 500) return alert('포인트가 부족합니다! (500P 필요)');
+
+    // [2024-01-29] Base items excluded from pool
+    const baseItems = ['s_m_base.png', 's_f_base.png', 'bg_000.png', 'bg_001.png'];
+    let pool = VALID[subTab].filter(i => !baseItems.includes(i));
+
+    // [v10.2 Pity System] 중복 4회 이상 시 확정 해금
+    if (stats.dupStreak >= 4) {
+        const newItems = pool.filter(i => !owned[subTab].includes(i));
+        if (newItems.length > 0) {
+            pool = newItems;
+            showToast("✨ 천장 발동!", "이번엔 무조건 새로운 아이템이 나옵니다!");
+        }
+    }
+
+    stats.gachaStreak++; if (stats.gachaStreak >= 5) unlockDirect(30);
+
+    pts -= 500; stats.totalSpent += 500; saveStats(); updateStatsUI(); checkAchievements();
+
+    showModal('gacha-modal');
+    document.getElementById('gacha-waiting').style.display = 'block';
+    document.getElementById('gacha-result-view').style.display = 'none';
+
+    setTimeout(() => {
+        document.getElementById('gacha-waiting').style.display = 'none';
+
+        const res = pool[Math.floor(Math.random() * pool.length)];
+        const isDup = owned[subTab].includes(res);
+
+        if (isDup) {
+            // Duplicate: Refund 100P
+            pts += 100;
+            stats.dupStreak++; if (stats.dupStreak >= 3) unlockDirect(26);
+            document.getElementById('res-name').innerText = `${res.replace('.png', '')} (중복! 100P 반환)`;
+            document.getElementById('res-img').src = res;
+            saveStats(); updateStatsUI();
+        } else {
+            // New Item
+            stats.dupStreak = 0;
+            owned[subTab].push(res);
+            localStorage.setItem('owned', JSON.stringify(owned));
+            unlockDirect(24);
+            document.getElementById('res-name').innerText = `${res.replace('.png', '')} (NEW!)`;
+            document.getElementById('res-img').src = res;
+        }
+
+        document.getElementById('gacha-result-view').style.display = 'block';
+        checkAchievements(); renderSkins();
+    }, 2500);
+}
+
+// [v10.2 Fix] Helper to show generalized Toast
+function showToast(title, desc) {
+    const toast = document.getElementById('ach-toast'); toast.style.top = '25px';
+    document.getElementById('toast-title').innerText = title;
+    document.getElementById('toast-desc').innerText = desc;
+    setTimeout(() => { toast.style.top = '-180px'; }, 4000);
+}
+
+// [New] Verification Cheats
+function cheat(type) {
+    if (!confirm('검증용 치트를 실행하시겠습니까? (로직 테스트용)')) return;
+    switch (type) {
+        case 'clicks': stats.totalClicks += 1000; break;
+        case 'time': stats.totalMin += 600; deepWorkSec += 36000; break; // +10 hours
+        case 'offline': stats.lastLogin = new Date(Date.now() - 86400000 * 8).toDateString(); break;
+        case 'points': pts += 50000; break;
+        case 'chart':
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                const k = getLocalISODate(d);
+                stats.history[k] = Math.floor(Math.random() * 60) + 10;
+            }
+            break;
+    }
+    saveStats(); updateStatsUI(); checkAchievements(); alert('치트 적용 완료!');
+}
+function tab(t) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.querySelectorAll('.nav div').forEach(d => d.classList.remove('active'));
+    document.getElementById('p-' + t).classList.add('active'); document.getElementById('t-' + t).classList.add('active');
+    document.getElementById('char-container').style.display = (t === 'timer' || t === 'skin' ? 'flex' : 'none');
+    if (t === 'skin') renderSkins(); if (t === 'achs') renderAchs();
+    if (t === 'stats') setTimeout(drawChart, 50); // [v11.2] Draw Chart
+    updateStatsUI();
+}
+function renderAchs() {
+    document.getElementById('ach-container').innerHTML = Object.keys(achDefs).map(i => {
+        const isUnlocked = ownedAchs.includes(Number(i));
+        const isEquipped = current.title === achDefs[i]?.t;
+        return `
+        <div class="ach-item ${isUnlocked ? 'unlocked' : ''} ${isEquipped ? 'equipped' : ''}" onclick="handleAchClick(${i})">
+            ${isUnlocked ? `
+                <b>${achDefs[i]?.t}</b>
+                <span style="font-size:9px; color:#aaa;">${achDefs[i]?.d}</span>
+            ` : `
+                <div style="font-size:20px; opacity:0.5;">🔒</div>
+                <span style="font-size:9px; color:#555;">잠긴 칭호</span>
+            `}
+        </div>`;
+    }).join('');
+}
+function updateDisp() { const d = isDeepWork ? deepWorkSec : sec; document.getElementById('time').innerText = `${Math.floor(d / 60).toString().padStart(2, '0')}:${(d % 60).toString().padStart(2, '0')}`; }
+function showModal(id) { document.getElementById(id).classList.add('active'); }
+function hideModal(id) { document.getElementById(id).classList.remove('active'); }
+// [v10.4 Fix] Resume Logic
+function handleResult(type) { hideModal('result-modal'); if (type === 'reset') resetTimerUI(); else resumeTimer(); }
+function handleEncourage(type) { hideModal('encourage-modal'); if (type === 'continue') resumeTimer(); else resetTimerUI(); }
+
+function resumeTimer() {
+    if (run) return;
+    run = true;
+    document.getElementById('p-timer').classList.add('is-running');
+    runEngine();
+}
+
+function resetTimerUI() {
+    clearInterval(interval); run = false; isDeepWork = false; sec = 300; deepWorkSec = 0;
+    document.getElementById('time').setAttribute('data-burning', 'false');
+    document.body.classList.remove('deep-work-mode'); // [v12.0] Visual Polish
+    document.getElementById('p-timer').classList.remove('is-running');
+    const dps = document.getElementById('daily-point-status');
+    if (dps) dps.style.display = 'none';
+    updateDisp();
+}
+function showResult() { const total = (300 - sec) + deepWorkSec; document.getElementById('final-time').innerText = `${Math.floor(total / 60).toString().padStart(2, '0')}:${(total % 60).toString().padStart(2, '0')}`; showModal('result-modal'); }
+function warpTime(amt) {
+    if (!run) return;
+    if (!isDeepWork) {
+        sec = Math.max(0, sec - amt);
+        if (sec === 0) {
+            isDeepWork = true;
+            document.getElementById('time').setAttribute('data-burning', 'true');
+            document.body.classList.add('deep-work-mode'); // [v12.0] Visual Polish
+            unlockDirect(1);
+        }
+    } else {
+        deepWorkSec += amt;
+    }
+    updateDisp();
+}
+function addPts(amt) { pts += amt; saveStats(); updateStatsUI(); checkAchievements(); }
+// [v10.2 Economy]
+// [v10.3] Earn Points with Session Tracking
+function earnPoints(amt) {
+    if (stats.dailyEarned >= 3000) return;
+    let realAmt = amt;
+    if (stats.dailyEarned + amt > 3000) realAmt = 3000 - stats.dailyEarned;
+    stats.dailyEarned += realAmt;
+    sessionEarned += realAmt; // [v10.3]
+    addPts(realAmt);
+    updateDailyPointUI();
+}
+function updateDailyPointUI() {
+    const el = document.getElementById('daily-point-status');
+    if (el) {
+        el.innerText = `Today: ${stats.dailyEarned} / 3000 P`;
+        el.style.display = 'block';
+    }
+}
+function watchAd(type) { alert("광고 시스템 준비 중..."); }
+
+function unlockDirect(id) { id = Number(id); if (!ownedAchs.includes(id)) { ownedAchs.push(id); localStorage.setItem('ownedAchs', JSON.stringify(ownedAchs)); showAchNotify(id); saveStats(); updateAestheticUI(); updateStatsUI(); SFX.play('success'); } }
+function showAchNotify(id) {
+    const ach = achDefs[id] || { t: '새로운 업적!', d: '도감을 확인하세요.' };
+    showToast(ach.t, ach.d);
+}
+function saveStats() { localStorage.setItem('stats_v2', JSON.stringify(stats)); localStorage.setItem('pts', pts); }
+function updateStatsUI() {
+    document.getElementById('stats-display').innerHTML = `<p>누적 집중: <b style="color:var(--blue);">${stats.totalMin || 0}</b>분</p><p>클릭/드래그: <b style="color:var(--blue);">${stats.totalClicks}</b>회</p><p>해금 칭호: <b style="color:var(--gold);">${ownedAchs.length}</b> / ${Object.keys(achDefs).length}</p>`;
+    document.getElementById('ui-pts').innerText = pts;
+    const sdp = document.getElementById('skin-daily-pts');
+    if (sdp) sdp.innerText = stats.dailyEarned;
+}
+function resetAll() { if (confirm("초기화?")) { localStorage.clear(); location.reload(); } }
+function cheatPoints() {
+    stats.dailyEarned = 2999;
+    showToast("🧪 치트 활성화", "일일 포인트가 2999P로 설정되었습니다. 1P만 더 얻으면 한도!");
+    saveStats(); updateDailyPointUI(); updateStatsUI();
+}
+// [v11.1] SFX UI Helper
+function toggleSFX() {
+    const isMuted = SFX.toggle();
+    updateSFXUI();
+}
+function updateSFXUI() {
+    const btn = document.getElementById('btn-sfx-toggle');
+    if (!btn) return;
+    btn.innerText = SFX.muted ? "OFF" : "ON";
+    btn.style.background = SFX.muted ? "#444" : "var(--blue)";
+    // Don't play click sound here to avoid annoyance when muting
+    if (!SFX.muted) SFX.play('click');
+}
+
+// [v11.3] Data Backup & Restore
+function exportData() {
+    const data = {
+        version: 'v11.3',
+        date: new Date().toISOString(),
+        stats: JSON.parse(localStorage.getItem('stats_v2') || '{}'),
+        pts: Number(localStorage.getItem('pts') || 0),
+        owned: JSON.parse(localStorage.getItem('owned') || '{}'),
+        ownedAchs: JSON.parse(localStorage.getItem('ownedAchs') || '[]'),
+        current: JSON.parse(localStorage.getItem('current') || '{}'),
+        sfx_muted: localStorage.getItem('sfx_muted')
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pixellab_backup_${getLocalISODate()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast("💾 백업 완료", "데이터가 안전하게 저장되었습니다.");
+    SFX.play('success');
+}
+
+function importData(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+
+            // Validation (Check essential keys)
+            if (!data.stats || !data.owned || !data.ownedAchs) {
+                throw new Error("Invalid Backup File");
+            }
+
+            if (!confirm(`[데이터 복구]\n백업 일자: ${data.date}\n\n현재 데이터를 덮어쓰시겠습니까?`)) {
+                input.value = ''; // Reset input
+                return;
+            }
+
+            // Restore
+            localStorage.setItem('stats_v2', JSON.stringify(data.stats));
+            localStorage.setItem('pts', data.pts);
+            localStorage.setItem('owned', JSON.stringify(data.owned));
+            localStorage.setItem('ownedAchs', JSON.stringify(data.ownedAchs));
+            localStorage.setItem('current', JSON.stringify(data.current));
+            if (data.sfx_muted !== null) localStorage.setItem('sfx_muted', data.sfx_muted);
+
+            alert("복구가 완료되었습니다. 앱을 재시작합니다.");
+            location.reload();
+        } catch (err) {
+            console.error(err);
+            alert("파일을 읽을 수 없습니다.\n올바른 백업 파일인지 확인해주세요.");
+        }
+    };
+    reader.readAsText(file);
+}
+
+// [v11.1] Audio Engine
+
+// [v11.2] Activity Chart Engine
+function drawChart() {
+    const canvas = document.getElementById('activity-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // Clear
+    ctx.clearRect(0, 0, w, h);
+
+    // Fetch Data (Last 7 Days)
+    const today = new Date();
+    const data = [];
+    const labels = [];
+    let max = 10; // Min scale
+
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        const dayKey = getLocalISODate(d);
+        const val = stats.history[dayKey] || 0;
+
+        data.push(val);
+        labels.push(i === 0 ? 'Today' : (d.getMonth() + 1) + '/' + d.getDate());
+        if (val > max) max = val;
+    }
+
+    // Draw Config
+    const barW = 20;
+    const gap = (w - (barW * 7)) / 8;
+    const scale = (h - 30) / max;
+
+    // Draw Bars
+    data.forEach((val, i) => {
+        const x = gap + (i * (barW + gap));
+        const barH = val * scale;
+        const y = h - 20 - barH;
+
+        // Bar
+        ctx.fillStyle = val > 0 ? (i === 6 ? '#FFD700' : '#3B82F6') : '#333'; // Today is Gold
+        ctx.fillRect(x, y, barW, barH);
+
+        // Value Label (if > 0)
+        if (val > 0) {
+            ctx.fillStyle = '#fff';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(val, x + barW / 2, y - 5);
+        }
+
+        // Date Label
+        ctx.fillStyle = '#888';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(labels[i], x + barW / 2, h - 5);
+    });
+}
+
+function timerClick() { SFX.play('click'); start(); }
+function closeGacha() { hideModal('gacha-modal'); }
+const cc = document.getElementById('char-container');
+let dOff = { x: 0, y: 0 };
+
+// [v10.2 Fix] Safe Event Listeners for Drag (No conflict with Idle Timer)
+cc.addEventListener('mousedown', (e) => {
+    stats.totalClicks++; unlockDirect(35); checkAchievements();
+    let r = cc.getBoundingClientRect();
+    dOff.x = e.clientX - r.left;
+    dOff.y = e.clientY - r.top;
+
+    const onMove = (e) => {
+        cc.style.left = (e.clientX - dOff.x) + 'px';
+        cc.style.top = (e.clientY - dOff.y) + 'px';
+        cc.style.bottom = 'auto';
+        cc.style.transform = 'none';
+
+        // Check Corner (37)
+        if (e.clientX < 50 || e.clientX > window.innerWidth - 50) unlockDirect(37);
+        resetIdleTimer(); // Reset idle timer while dragging
+    };
+
+    const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        saveStats();
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+});
+
+// [v10.2 Fix] Ensure DOM is ready before init
+// [v11.1] Sound Engine (Web Audio API)
+const SFX = {
+    ctx: null,
+    muted: localStorage.getItem('sfx_muted') === 'true',
+
+    init() {
+        if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+    },
+
+    toggle() {
+        this.muted = !this.muted;
+        localStorage.setItem('sfx_muted', this.muted);
+        return this.muted;
+    },
+
+    play(type) {
+        if (this.muted || !this.ctx) return;
+
+        // [Constraint] Quiet during Deep Work
+        // Deep Work 중에는 'beep'(집중 알림) 외에는 소리 재생 안 함
+        if (isDeepWork && type !== 'beep') return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        const now = this.ctx.currentTime;
+
+        switch (type) {
+            case 'click': // Short Tick
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+                break;
+
+            case 'start': // Ascending
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(600, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+                break;
+
+            case 'success': // Simple Major Chord Arpeggio
+                this._playNote(523.25, 0, 0.1); // C5
+                this._playNote(659.25, 0.1, 0.1); // E5
+                this._playNote(783.99, 0.2, 0.2); // G5
+                break;
+
+            case 'beep': // Soft notification for Deep Work
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                gain.gain.setValueAtTime(0.05, now); // Very quiet
+                gain.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+                break;
+        }
+    },
+
+    _playNote(freq, delay, duration) {
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.connect(g);
+        g.connect(this.ctx.destination);
+        o.type = 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.1, this.ctx.currentTime + delay);
+        g.gain.linearRampToValueAtTime(0, this.ctx.currentTime + delay + duration);
+        o.start(this.ctx.currentTime + delay);
+        o.stop(this.ctx.currentTime + delay + duration);
+    }
+};
+
+// [v10.4] Safe Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        initApp();
+    } catch (e) {
+        console.error("Critical Init Error:", e);
+        const emerg = document.getElementById('emergency-reset');
+        if (emerg) {
+            emerg.style.display = 'block';
+            emerg.style.zIndex = '99999';
+        }
+    }
+});

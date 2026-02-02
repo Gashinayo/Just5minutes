@@ -1,0 +1,467 @@
+/* [Design System] Cyber-Pixel 테마 컬러 팔레트 */
+:root {
+    --blue: #3B82F6;
+    --gold: #FFD700;
+    --red: #EF4444;
+    --orange: #F97316;
+    --bg: #000;
+    --glass: rgba(15, 15, 15, 0.95);
+    --title-color: #5EEAD4;
+    /* [v10.4] Z-Index Architecture */
+    --z-bg: 0;
+    --z-content: 10;
+    --z-ui: 100;
+    --z-nav: 2000;
+    --z-modal: 4000;
+    --z-toast: 5000;
+    --z-emergency: 9999;
+}
+
+/* [v12.0] Visual Polish: Deep Work Dimming */
+#app::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, transparent 30%, #000 100%);
+    pointer-events: none;
+    z-index: 5;
+    /* Above BG(0), Below Char(10) */
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+body.deep-work-mode #app::before {
+    opacity: 0.85;
+    /* Stronger dimming */
+}
+
+/* Enhancing Focus Effect */
+body.deep-work-mode #app {
+    /* No filter on app itself to prevent double darkening of UI */
+}
+
+/* Ensure Timer is above dimming */
+.timer-group {
+    z-index: 500;
+    /* Already high enough */
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--bg);
+    color: #fff;
+    font-family: 'Pretendard', sans-serif;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    height: 100vh;
+}
+
+#app {
+    width: 100%;
+    max-width: 400px;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-size: cover;
+    background-position: center 85%;
+    background-repeat: no-repeat;
+}
+
+/* 네비게이션: 상단 45px 안전 마진 */
+.nav {
+    display: flex;
+    justify-content: space-around;
+    padding: 45px 0 12px 0;
+    background: rgba(0, 0, 0, 0.98);
+    z-index: var(--z-nav);
+    border-bottom: 1px solid #333;
+}
+
+.nav div {
+    cursor: pointer;
+    color: #888;
+    font-size: 11px;
+    transition: 0.3s;
+    padding: 5px 2px;
+}
+
+.nav div.active {
+    color: #fff;
+    font-weight: bold;
+    border-bottom: 2px solid var(--blue);
+    text-shadow: 0 0 8px var(--blue);
+    /* Glow effect */
+}
+
+.nav div:hover {
+    color: #fff;
+}
+
+.tab-content {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    z-index: var(--z-content);
+    overflow-y: auto;
+    padding-bottom: 120px;
+}
+
+.tab-content.active {
+    display: flex;
+    animation: fade-in 0.4s ease-out;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 타이머 & 불타는 효과 */
+#p-timer {
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex: 1;
+}
+
+.timer-group {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -80%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.5s ease-in-out;
+    z-index: 500;
+}
+
+.timer {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    border: 6px solid var(--blue);
+    background: #fff;
+    color: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 55px;
+    font-weight: 800;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition: 0.5s;
+}
+
+.timer[data-burning="true"] {
+    border-color: var(--red) !important;
+    color: var(--red) !important;
+    animation: flame-pulse 1s infinite !important;
+}
+
+@keyframes flame-pulse {
+    0% {
+        box-shadow: 0 0 10px var(--red);
+    }
+
+    50% {
+        box-shadow: 0 0 35px var(--orange);
+    }
+
+    100% {
+        box-shadow: 0 0 10px var(--red);
+    }
+}
+
+.is-running .timer {
+    width: 95px;
+    height: 45px;
+    border-radius: 22px;
+    border-width: 2.5px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    font-size: 18px;
+    backdrop-filter: blur(10px);
+}
+
+.is-running .timer-group {
+    top: 15px;
+    left: calc(100% - 60px);
+    transform: translateX(-50%);
+}
+
+.is-running .btn {
+    display: none !important;
+}
+
+.btn {
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    padding: 18px 45px;
+    border-radius: 15px;
+    margin-top: 35px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Bouncy */
+}
+
+.btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--blue);
+}
+
+.btn:active {
+    transform: scale(0.95);
+}
+
+/* 칭호 위치 (v9.4 완벽 롤백) */
+#char-title-tag {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: var(--title-color);
+    padding: 2px 10px;
+    border-radius: 5px;
+    font-size: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+    border: 1px solid var(--title-color);
+    box-shadow: 0 0 10px var(--title-color);
+    z-index: 150;
+    display: none;
+}
+
+/* [수정] 스킨 탭 디자인 완결 */
+.sub-tab-area {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sub-tab-btn {
+    cursor: pointer;
+    color: #777;
+    transition: 0.3s;
+    padding-bottom: 4px;
+    font-size: 14px;
+}
+
+.sub-tab-btn.active {
+    color: #fff !important;
+    font-weight: bold !important;
+    border-bottom: 2px solid #fff !important;
+}
+
+.config-panel {
+    background: var(--glass);
+    margin: 15px;
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pos-btn {
+    background: #333;
+    border: 1px solid #555;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.pos-btn.active {
+    background: var(--blue);
+    border-color: var(--blue);
+}
+
+.ach-grid,
+.skin-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 15px;
+}
+
+/* [수정] 스킨 아이템 상자 디자인 */
+.skin-item {
+    background: rgba(255, 255, 255, 0.1);
+    /* 반투명 상자 */
+    aspect-ratio: 1/1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.skin-item.selected {
+    border-color: var(--blue);
+    background: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+    /* 활성화 표시 */
+}
+
+.skin-item img {
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+/* 칭호 도감 그리드 (v9.4 복구) */
+.ach-item {
+    background: var(--glass);
+    aspect-ratio: 1/1;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #444;
+    font-size: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    padding: 4px;
+}
+
+.ach-item.equipped {
+    border-color: var(--blue);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* [Character Container] PRD v9.5: 2등신 캐릭터 비율 유지 및 위치 고정 */
+#char-container {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 130px;
+    height: 130px;
+    z-index: 100;
+    cursor: grab;
+}
+
+.char-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+}
+
+.modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.96);
+    z-index: var(--z-modal);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.modal.active {
+    display: flex;
+    pointer-events: auto;
+    opacity: 1;
+}
+
+.modal-box {
+    background: #1a1a1a;
+    width: 85%;
+    padding: 30px 20px;
+    border-radius: 25px;
+    text-align: center;
+    border: 2px solid var(--gold);
+}
+
+.modal.active .modal-box {
+    animation: modal-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes modal-pop {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes box-shake {
+
+    0%,
+    100% {
+        transform: rotate(0);
+    }
+
+    25% {
+        transform: rotate(-10deg);
+    }
+
+    75% {
+        transform: rotate(10deg);
+    }
+}
+
+.gacha-icon {
+    font-size: 80px;
+    animation: box-shake 0.4s infinite;
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+/* [v10.4] Emergency Reset UI */
+#emergency-reset {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #333;
+    padding: 20px;
+    border: 2px solid var(--red);
+    border-radius: 15px;
+    color: #fff;
+    text-align: center;
+    z-index: var(--z-emergency);
+    display: none;
+}
