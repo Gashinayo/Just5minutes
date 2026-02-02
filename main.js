@@ -76,6 +76,9 @@ function getLocalISODate(d = new Date()) {
 }
 
 // Global Variables Declaration
+// [v15.0] Quest & Event System Data
+let quests;
+let feverEndTime = 0; // Timestamp when fever ends
 let stats, ownedAchs, current, owned, pts;
 let run = false, isDeepWork = false, sec = 300, deepWorkSec = 0, interval, idleTimer, subTab = 'char';
 let startupTime = Date.now(), lastStopTime = 0, clickSession = 0;
@@ -93,39 +96,76 @@ function initApp() {
     });
     if (!stats.history) stats.history = {};
 
+    // [v15.0] Quest Data Initialization
+    quests = safeParse('quests', {
+        daily: { checkIn: false, focus25: false, lucky: false, lastReset: '' },
+        weekly: { progressMin: 0, claimedSteps: [], lastReset: '' },
+        inventory: { feverItem: 0 }
+    });
+
+    checkQuests(); // Initialize/Reset Quests based on Date
+
     // Migration Logic
     if (stats.dailyEarned === undefined) stats.dailyEarned = 0;
     if (!stats.totalMin && localStorage.getItem('stats')) {
         const old = safeParse('stats', {});
         stats.totalMin = old.weeklyTime || 0;
-        stats.totalClicks = old.drags || 0;
+        stats.maxSec = old.maxFocus || 0;
+        stats.consecutiveDays = old.consecutive || 0;
     }
 
-    ownedAchs = safeParse('ownedAchs', [11]);
-    current = safeParse('current', { char: 's_m_base.png', bg: 'bg_000.png', title: null, titleColor: '#5EEAD4', titlePos: 'top' });
-    owned = safeParse('owned', { char: ['s_m_base.png', 's_f_base.png'], bg: ['bg_000.png', 'bg_001.png'] });
-    pts = Number(localStorage.getItem('pts')) || 99999;
+    ownedAchs = safeParse('ownedAchs', []);
+    current = safeParse('current', { char: 's_m_base.png', bg: 'bg_000.png', title: '', titlePos: 'top', titleColor: '#FFD700' });
+    owned = safeParse('owned', ['s_m_base.png', 's_f_base.png', 'bg_000.png', 'bg_001.png', 'bg_002.png', 'bg_003.png']);
+    pts = parseInt(localStorage.getItem('pts') || 0);
 
-    // [Logic] 접속 체크 (Login Check)
+    // [v11.1] Audio Engine Init
+    SFX.init();
+
+    // Reset daily logic
     const today = new Date().toDateString();
     if (stats.lastLogin !== today) {
-        stats.dailyStarts = 1;
-        const yesterday = new Date(Date.now() - 86400000).toDateString();
-        if (stats.lastLogin === yesterday) stats.consecutiveDays++;
-        else {
-            const last = new Date(stats.lastLogin).getTime();
-            const diff = (Date.now() - last) / (1000 * 60 * 60 * 24);
-            if (diff >= 7 && diff < 8) unlockDirect(18);
+        if (isConsecutive(stats.lastLogin)) {
+            stats.consecutiveDays++;
+            if (stats.consecutiveDays === 3) unlockDirect(12);
+            if (stats.consecutiveDays === 7) { unlockDirect(13); earnPoints(1000); alert("7일 연속 출석! 1000P 획득!"); }
+            if (stats.consecutiveDays === 30) unlockDirect(14);
+            // [v15.0] Weekend Warrior Logic could go here
+        } else {
+            if (stats.lastLogin && (new Date() - new Date(stats.lastLogin)) > 7 * 86400000) unlockDirect(18);
             stats.consecutiveDays = 1;
         }
-        stats.lastLogin = today;
-        stats.totalLogins++;
+        stats.dailyStarts = 0;
         stats.dailyEarned = 0;
-        checkDailyAchs();
-    } else {
-        stats.dailyStarts++;
+        stats.lastLogin = today;
     }
-    if (stats.dailyStarts >= 5) unlockDirect(19);
+    stats.totalLogins++;
+    if (stats.totalLogins === 1) unlockDirect(11);
+
+    // [v15.0] Daily Quest: Check-in
+    if (!quests.daily.checkIn) {
+        quests.daily.checkIn = true;
+        earnPoints(100, true); // Silent earn, show updated UI later
+        saveQuests();
+    }
+
+    saveStats();
+    updateDisp();
+    renderSkinList();
+    loadAchUI();
+    document.getElementById('pos-' + current.titlePos).classList.add('active');
+    document.getElementById('title-color-picker').value = current.titleColor;
+
+    // [v14.0] Setup Drag Events
+    const cc = document.getElementById('char-container');
+    if (cc) {
+        cc.addEventListener('mousedown', startDrag);
+        cc.addEventListener('touchstart', startDrag, { passive: false });
+    }
+
+    // [v15.0] Render Quest UI
+    renderQuestUI();
+    setInterval(updateFeverUI, 1000); // Ticking logic for UI
 
     // [Initialization UI]
     updateAestheticUI();
@@ -266,7 +306,10 @@ function start() {
 
             // 마라토너
             if (deepWorkSec === 2539) unlockDirect(7); // 42분 19초
-            if (deepWorkSec >= 1500) unlockDirect(3); // 25분
+            if (deepWorkSec >= 1500) {
+                unlockDirect(3); // 25분 (Achievement)
+                triggerFever();  // [v15.0] Daily Quest & Fever Item
+            }
         }
         // [v10.4 Fix] Use showResult for proper time display
         if (isDeepWork) showResult();
@@ -313,6 +356,11 @@ function runEngine() {
                 // [v11.2] Update History
                 const todayKey = getLocalISODate();
                 stats.history[todayKey] = (stats.history[todayKey] || 0) + 1;
+
+                // [v15.0] Weekly Quest Progress
+                quests.weekly.progressMin++;
+                saveQuests();
+                renderQuestUI(); // Update Progress Bar
 
                 // earnPoints(10); // Removed (replaced by 10s rule)
                 saveStats(); checkAchievements();
@@ -467,12 +515,20 @@ function warpTime(amt) {
 function addPts(amt) { pts += amt; saveStats(); updateStatsUI(); checkAchievements(); }
 // [v10.2 Economy]
 // [v10.3] Earn Points with Session Tracking
-function earnPoints(amt) {
-    if (stats.dailyEarned >= 3000) return;
+// [v15.0] Fever Multiplier
+function earnPoints(amt, force = false) {
+    if (!force && stats.dailyEarned >= 3000) return;
+
+    // Fever Logic
+    if (Date.now() < feverEndTime) {
+        amt *= 2;
+    }
+
     let realAmt = amt;
-    if (stats.dailyEarned + amt > 3000) realAmt = 3000 - stats.dailyEarned;
+    if (!force && stats.dailyEarned + amt > 3000) realAmt = 3000 - stats.dailyEarned;
+
     stats.dailyEarned += realAmt;
-    sessionEarned += realAmt; // [v10.3]
+    sessionEarned += realAmt;
     addPts(realAmt);
     updateDailyPointUI();
 }
@@ -797,3 +853,182 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+// [v15.0] Quest System Helper Functions
+function checkQuests() {
+    const today = getLocalISODate();
+
+    // Daily Reset
+    if (quests.daily.lastReset !== today) {
+        quests.daily = {
+            checkIn: false,
+            focus25: false,
+            lucky: false,
+            lastReset: today
+        };
+    }
+
+    // Weekly Reset (Monday)
+    // Calculate start of week (Monday)
+    const d = new Date();
+    const day = d.getDay(); // 0:Sun, 1:Mon...
+    const diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+    const monday = new Date(d.setDate(diff)).toISOString().split('T')[0];
+
+    if (quests.weekly.lastReset !== monday) {
+        quests.weekly = {
+            progressMin: 0,
+            claimedSteps: [],
+            lastReset: monday
+        };
+    }
+    saveQuests();
+}
+
+function saveQuests() {
+    localStorage.setItem('quests', JSON.stringify(quests));
+}
+
+function useFeverItem() {
+    if (quests.inventory.feverItem > 0) {
+        quests.inventory.feverItem--;
+        feverEndTime = Date.now() + (30 * 60 * 1000); // 30 mins
+        alert("🔥 피버 타임 시작! (30분간 포인트 2배)");
+        saveQuests();
+        updateFeverUI();
+    } else {
+        alert("피버 물약이 없습니다.");
+    }
+}
+
+function triggerFever() {
+    // Called when 25 min focus complete
+    if (!quests.daily.focus25) {
+        quests.daily.focus25 = true;
+        earnPoints(300, true);
+        alert("일일 퀘스트 완료: 25분 집중 (300P)");
+    }
+    // Give Item
+    if (stats.dailyEarned < 3000) {
+        quests.inventory.feverItem++;
+        alert("🔥 집중 성공 보상: 피버 물약 1개 획득!");
+        saveQuests();
+        renderQuestUI();
+    } else {
+        alert("⚠️ 일일 포인트 한도 초과로 피버 물약을 획득할 수 없습니다.");
+    }
+}
+
+function claimWeeklyReward(step) {
+    if (quests.weekly.claimedSteps.includes(step)) return;
+    if (quests.weekly.progressMin >= step * 60) {
+        quests.weekly.claimedSteps.push(step);
+        earnPoints(500, true);
+        saveQuests();
+        renderQuestUI();
+        alert(`주간 퀘스트 완료: ${step}시간 달성 (500P)`);
+    } else {
+        alert("아직 달성하지 못했습니다.");
+    }
+}
+
+function tryLuckyBox() {
+    if (quests.daily.lucky) {
+        alert("오늘은 이미 열었습니다.");
+        return;
+    }
+    quests.daily.lucky = true;
+
+    // [Balanced Probabilities]
+    const rand = Math.random() * 100;
+    let reward = 10;
+    if (rand < 2) reward = 500; // 2%
+    else if (rand < 10) reward = 200; // 8%
+    else if (rand < 30) reward = 100; // 20%
+    else if (rand < 60) reward = 50; // 30%
+
+    earnPoints(reward, true);
+    saveQuests();
+    renderQuestUI();
+    alert(`🎁 행운의 상자 결과: ${reward}P 획득!`);
+}
+
+function updateFeverUI() {
+    const now = Date.now();
+    const isFever = now < feverEndTime;
+    const btn = document.getElementById('btn-use-fever');
+    const timeEl = document.getElementById('time');
+
+    if (btn) {
+        if (isFever) {
+            const remain = Math.ceil((feverEndTime - now) / 1000);
+            const m = Math.floor(remain / 60);
+            const s = remain % 60;
+            btn.innerText = `🔥 활성화 중 (${m}:${s < 10 ? '0' + s : s})`;
+            btn.disabled = true;
+            btn.style.background = '#ff4500';
+            if (timeEl) {
+                timeEl.style.color = '#ff4500';
+                timeEl.style.textShadow = '0 0 15px #ff0000';
+            }
+        } else {
+            btn.innerText = `사용하기 (보유: ${quests.inventory.feverItem})`;
+            btn.disabled = quests.inventory.feverItem === 0;
+            btn.style.background = quests.inventory.feverItem > 0 ? 'var(--gold)' : '#555';
+
+            // Revert Style if not in deep work (Deep work has its own style, but fever overrides color)
+            // Ideally we check isDeepWork to know if we should revert to white or something else.
+            // But main loop updates display constantly.
+            if (timeEl) {
+                timeEl.style.color = '#fff';
+                timeEl.style.textShadow = 'none';
+            }
+        }
+    }
+}
+
+function renderQuestUI() {
+    const container = document.getElementById('quest-container');
+    if (!container) return;
+
+    // Daily UI
+    const q1 = quests.daily.checkIn ? '✅' : '⬜';
+    const q2 = quests.daily.focus25 ? '✅' : '⬜';
+    const q3 = quests.daily.lucky ? '✅' : '🎁'; // Clickable
+
+    // Weekly UI
+    const weekMin = quests.weekly.progressMin;
+    const weekHours = (weekMin / 60).toFixed(1);
+
+    let wHtml = '';
+    [5, 10, 15, 20, 25].forEach(step => {
+        const done = quests.weekly.claimedSteps.includes(step);
+        const canClaim = !done && (weekMin >= step * 60);
+        const style = done ? 'color:#888; text-decoration:line-through' : (canClaim ? 'color:var(--gold); font-weight:bold; cursor:pointer' : 'color:#555');
+        const click = canClaim ? `onclick="claimWeeklyReward(${step})"` : '';
+        wHtml += `<span style="${style}; margin-right:8px;" ${click}>[${step}h]</span>`;
+    });
+
+    container.innerHTML = `
+        <div style="margin-bottom:15px; background:rgba(255,255,255,0.05); padding:10px; border-radius:10px;">
+            <div style="font-weight:bold; margin-bottom:5px;">📅 일일 퀘스트</div>
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+                <span>${q1} 출석</span>
+                <span>${q2} 25분 집중</span>
+                <span onclick="tryLuckyBox()" style="cursor:${quests.daily.lucky ? 'default' : 'pointer'}">${q3} 랜덤박스</span>
+            </div>
+        </div>
+        <div style="margin-bottom:15px; background:rgba(255,255,255,0.05); padding:10px; border-radius:10px;">
+            <div style="font-weight:bold; margin-bottom:5px;">📅 주간 도전 (${weekHours} / 25.0 h)</div>
+            <div style="font-size:12px;">${wHtml}</div>
+        </div>
+        <div>
+            <div style="font-weight:bold; margin-bottom:5px;">🎒 인벤토리</div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span>🔥 피버 물약</span>
+                <button id="btn-use-fever" class="btn" style="width:auto; padding:5px 10px; font-size:11px; margin-top:0;" onclick="useFeverItem()">Loading...</button>
+            </div>
+        </div>
+    `;
+    updateFeverUI();
+}
