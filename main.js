@@ -100,10 +100,12 @@ function initApp() {
     quests = safeParse('quests', {
         daily: { checkIn: false, focus25: false, lucky: false, lastReset: '' },
         weekly: { progressMin: 0, claimedSteps: [], lastReset: '' },
-        inventory: { feverItem: 0 }
+        inventory: { feverItem: 0 },
+        feverEndTime: 0 // [Fix] Persist Timer
     });
 
     checkQuests(); // Initialize/Reset Quests based on Date
+    feverEndTime = quests.feverEndTime || 0; // Sync global var
 
     // Migration Logic
     if (stats.dailyEarned === undefined) stats.dailyEarned = 0;
@@ -893,6 +895,7 @@ function useFeverItem() {
     if (quests.inventory.feverItem > 0) {
         quests.inventory.feverItem--;
         feverEndTime = Date.now() + (30 * 60 * 1000); // 30 mins
+        quests.feverEndTime = feverEndTime; // [Fix] Save
         alert("🔥 피버 타임 시작! (30분간 포인트 2배)");
         saveQuests();
         updateFeverUI();
