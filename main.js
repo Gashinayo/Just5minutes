@@ -125,7 +125,27 @@ function initApp() {
 
     ownedAchs = safeParse('ownedAchs', []);
     current = safeParse('current', { char: 's_m_base.png', bg: 'bg_000.png', title: '', titlePos: 'top', titleColor: '#FFD700' });
-    owned = safeParse('owned', ['s_m_base.png', 's_f_base.png', 'bg_000.png', 'bg_001.png', 'bg_002.png', 'bg_003.png']);
+
+    // [CRITICAL FIX] Restore 'owned' to Object structure
+    const defaultOwned = { char: ['s_m_base.png', 's_f_base.png'], bg: ['bg_000.png', 'bg_001.png', 'bg_002.png', 'bg_003.png'] };
+    owned = safeParse('owned', defaultOwned);
+
+    // [Migration] Fix if owned became an Array by mistake
+    if (Array.isArray(owned)) {
+        console.warn("Corrupted 'owned' detected. Migrating...");
+        // Split items into char and bg based on prefix
+        const recovered = { char: [], bg: [] };
+        owned.forEach(item => {
+            if (item.startsWith('bg_')) recovered.bg.push(item);
+            else recovered.char.push(item);
+        });
+        // Merge with defaults to ensure basics exist
+        defaultOwned.char.forEach(i => { if (!recovered.char.includes(i)) recovered.char.push(i); });
+        defaultOwned.bg.forEach(i => { if (!recovered.bg.includes(i)) recovered.bg.push(i); });
+        owned = recovered;
+        localStorage.setItem('owned', JSON.stringify(owned));
+    }
+
     pts = parseInt(localStorage.getItem('pts') || 0);
 
     // [v11.1] Audio Engine Init
