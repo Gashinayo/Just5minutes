@@ -97,12 +97,19 @@ function initApp() {
     if (!stats.history) stats.history = {};
 
     // [v15.0] Quest Data Initialization
-    quests = safeParse('quests', {
+    const defaultQuests = {
         daily: { checkIn: false, focus25: false, lucky: false, lastReset: '' },
         weekly: { progressMin: 0, claimedSteps: [], lastReset: '' },
         inventory: { feverItem: 0 },
-        feverEndTime: 0 // [Fix] Persist Timer
-    });
+        feverEndTime: 0
+    };
+    quests = safeParse('quests', defaultQuests);
+
+    // [Fix] Validation: Ensure structure exists (prevent crash if incomplete data in LS)
+    if (!quests || !quests.daily || !quests.weekly || !quests.inventory) {
+        console.warn("Invalid Quests Data detected. Resetting.");
+        quests = defaultQuests;
+    }
 
     checkQuests(); // Initialize/Reset Quests based on Date
     feverEndTime = quests.feverEndTime || 0; // Sync global var
@@ -852,6 +859,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (emerg) {
             emerg.style.display = 'block';
             emerg.style.zIndex = '99999';
+            // [Debug] Show error to user
+            const msg = document.createElement('p');
+            msg.style.color = 'red'; msg.innerText = e.message;
+            emerg.appendChild(msg);
         }
     }
 });
