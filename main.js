@@ -1495,7 +1495,7 @@ function renderQuestUI() {
             <div style="font-weight:bold; margin-bottom:5px;">📅 주간 도전 (${weekHours} / 25.0 h)</div>
             <div style="font-size:12px;">${wHtml}</div>
         </div>
-        <div>
+        <div class="quest-card">
             <div style="font-weight:bold; margin-bottom:5px;">🎒 인벤토리</div>
             <div style="display:flex; align-items:center; justify-content:space-between;">
                 <span>🔥 피버 물약</span>

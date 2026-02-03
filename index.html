@@ -198,9 +198,9 @@
                 style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
                 <p style="margin-bottom:10px; font-weight:bold;">💾 데이터 백업</p>
                 <div style="display:flex; gap:10px;">
-                    <button class="btn" style="margin-top:0; background:var(--blue); flex:1;"
+                    <button class="btn" style="margin-top:0; background:var(--blue); flex:1; font-size:12px;"
                         onclick="exportData()">내보내기</button>
-                    <button class="btn" style="margin-top:0; background:#444; flex:1;"
+                    <button class="btn" style="margin-top:0; background:#444; flex:1; font-size:12px;"
                         onclick="document.getElementById('import-file').click()">불러오기</button>
                     <input type="file" id="import-file" style="display:none" onchange="importData(this)" accept=".json">
                 </div>
