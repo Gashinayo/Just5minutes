@@ -137,7 +137,10 @@ body {
 .nav {
     display: flex;
     justify-content: space-around;
-    padding: 45px 0 12px 0;
+    padding: 15px 0 12px 0;
+    /* Reduced from 45px for compact layout */
+    padding-top: max(15px, env(safe-area-inset-top));
+    /* Support for notched phones */
     background: rgba(0, 0, 0, 0.98);
     z-index: var(--z-nav);
     border-bottom: 1px solid #333;
