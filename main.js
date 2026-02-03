@@ -516,7 +516,7 @@ function tab(t) {
     document.getElementById('p-' + t).classList.add('active'); document.getElementById('t-' + t).classList.add('active');
     document.getElementById('char-container').style.display = (t === 'timer' || t === 'skin' ? 'flex' : 'none');
     if (t === 'skin') renderSkins(); if (t === 'achs') renderAchs();
-    if (t === 'stats') setTimeout(drawChart, 50); // [v11.2] Draw Chart
+    if (t === 'stats') renderDashboard(); // [v17.0] Render Dashboard
     updateStatsUI();
 }
 function renderAchs() {
@@ -702,36 +702,127 @@ function importData(input) {
 // [v11.1] Audio Engine
 
 // [v11.2] Activity Chart Engine
-function drawChart() {
-    const canvas = document.getElementById('activity-chart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
+// [v17.0] Analytics Engine
+let chartRange = '7d';
 
-    // Clear
-    ctx.clearRect(0, 0, w, h);
+function switchChart(range) {
+    chartRange = range;
 
-    // Fetch Data (Last 7 Days)
+    // Update Buttons
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.id === `btn-${range}`);
+    });
+
+    renderDashboard();
+}
+
+function getAnalyticsData(days) {
     const today = new Date();
     const data = [];
     const labels = [];
-    let max = 10; // Min scale
+    let max = 10;
+    let total = 0;
+    let activeDays = 0;
 
-    for (let i = 6; i >= 0; i--) {
+    for (let i = days - 1; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(today.getDate() - i);
         const dayKey = getLocalISODate(d);
         const val = stats.history[dayKey] || 0;
 
         data.push(val);
-        labels.push(i === 0 ? 'Today' : (d.getMonth() + 1) + '/' + d.getDate());
+        // Label strategy based on range
+        if (days === 7) {
+            labels.push(i === 0 ? 'Today' : (d.getMonth() + 1) + '/' + d.getDate());
+        } else {
+            // For 30 days, show every 5th day
+            labels.push(i % 5 === 0 ? (d.getMonth() + 1) + '/' + d.getDate() : '');
+        }
+
+        if (val > 0) activeDays++;
         if (val > max) max = val;
+        total += val;
     }
 
+    return { data, labels, max, total, activeDays };
+}
+
+function generateInsights(analytics) {
+    const { data, total, activeDays } = analytics;
+    const todayVal = data[data.length - 1];
+    const avg = activeDays > 0 ? (total / activeDays) : 0;
+
+    // Simple Heuristics
+    // 1. Consistency
+    let streak = 0;
+    for (let i = data.length - 1; i >= 0; i--) {
+        if (data[i] > 0) streak++;
+        else break;
+    }
+
+    if (streak >= 3) return { icon: "🔥", text: `${streak}일 연속 집중 중! 이 기세를 몰아보세요.` };
+    if (todayVal > avg * 1.2 && avg > 10) return { icon: "🚀", text: "오늘 페이스가 아주 좋습니다! 평균을 훌쩍 넘겼어요." };
+    if (todayVal > 0 && todayVal < avg * 0.5) return { icon: "📉", text: `평소(${Math.round(avg)}분)보다 조금 부족해요. 10분만 더?` };
+    if (activeDays === 0) return { icon: "🌱", text: "집중을 시작해보세요. 첫 기록을 기다리고 있습니다." };
+
+    // Weekend vs Weekday check could be added here
+
+    return { icon: "💡", text: "꾸준한 기록이 성장의 밑거름이 됩니다." };
+}
+
+function renderDashboard() {
+    const days = chartRange === '7d' ? 7 : 30;
+    const analytics = getAnalyticsData(days);
+
+    drawChart(analytics);
+    updateKPIs(analytics, days);
+    updateInsight(getAnalyticsData(7)); // Insight always based on recent 7 days trends
+}
+
+function updateKPIs(analytics, days) {
+    if (!document.getElementById('stat-total')) return;
+
+    // Total Focus (All time)
+    // We need to calc all time total from stats.history keys
+    let allTimeTotal = 0;
+    let bestDay = 0;
+    Object.values(stats.history).forEach(val => {
+        allTimeTotal += val;
+        if (val > bestDay) bestDay = val;
+    });
+
+    // Formatting
+    const formatTime = (min) => {
+        if (min < 60) return `${min}m`;
+        return `${(min / 60).toFixed(1)}h`;
+    };
+
+    document.getElementById('stat-total').innerText = formatTime(allTimeTotal);
+    document.getElementById('stat-avg').innerText = formatTime(Math.round(analytics.total / (analytics.activeDays || 1)));
+    document.getElementById('stat-best').innerText = formatTime(bestDay);
+}
+
+function updateInsight(analytics) {
+    const insight = generateInsights(analytics);
+    document.querySelector('#insight-banner div:first-child').innerText = insight.icon;
+    document.getElementById('insight-text').innerText = insight.text;
+}
+
+function drawChart(analytics) {
+    const canvas = document.getElementById('activity-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    const { data, labels, max } = analytics;
+
+    // Clear
+    ctx.clearRect(0, 0, w, h);
+
     // Draw Config
-    const barW = 20;
-    const gap = (w - (barW * 7)) / 8;
+    const is7d = data.length === 7;
+    const barW = is7d ? 20 : 6;
+    const gap = (w - (barW * data.length)) / (data.length + 1);
     const scale = (h - 30) / max;
 
     // Draw Bars
@@ -741,11 +832,11 @@ function drawChart() {
         const y = h - 20 - barH;
 
         // Bar
-        ctx.fillStyle = val > 0 ? (i === 6 ? '#FFD700' : '#3B82F6') : '#333'; // Today is Gold
+        ctx.fillStyle = val > 0 ? (i === data.length - 1 ? '#FFD700' : '#3B82F6') : '#333';
         ctx.fillRect(x, y, barW, barH);
 
-        // Value Label (if > 0)
-        if (val > 0) {
+        // Value Label (Only for 7d view)
+        if (is7d && val > 0) {
             ctx.fillStyle = '#fff';
             ctx.font = '10px sans-serif';
             ctx.textAlign = 'center';
@@ -753,10 +844,12 @@ function drawChart() {
         }
 
         // Date Label
-        ctx.fillStyle = '#888';
-        ctx.font = '9px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(labels[i], x + barW / 2, h - 5);
+        if (labels[i]) {
+            ctx.fillStyle = '#888';
+            ctx.font = '9px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(labels[i], x + barW / 2, h - 5);
+        }
     });
 }
 
