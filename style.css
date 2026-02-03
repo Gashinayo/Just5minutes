@@ -31,6 +31,12 @@
     transition: background 0.3s;
 }
 
+/* [v17.3] Quest Card Spacing Override */
+.quest-card {
+    margin-bottom: 30px;
+    /* Increased spacing between parent items */
+}
+
 /* [v17.0] Dashboard Styles */
 .stat-grid {
     display: grid;
