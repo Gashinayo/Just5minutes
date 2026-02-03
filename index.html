@@ -107,11 +107,19 @@
                 </div>
 
                 <div id="ambiance-controls"
-                    style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px;">
+                    style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px; margin-top:10px;">
                     <button class="amb-btn" onclick="Ambiance.play('rain')" data-track="rain">🌧️ Rain</button>
                     <button class="amb-btn" onclick="Ambiance.play('fire')" data-track="fire">🔥 Fire</button>
+                    <button class="amb-btn" onclick="Ambiance.play('forest')" data-track="forest">🌲 Forest</button>
+                    <button class="amb-btn" onclick="Ambiance.play('ocean')" data-track="ocean">🌊 Ocean</button>
+
+                    <button class="amb-btn" onclick="Ambiance.play('stream')" data-track="stream">💧 Stream</button>
+                    <button class="amb-btn" onclick="Ambiance.play('fan')" data-track="fan">🌀 Fan</button>
+                    <button class="amb-btn" onclick="Ambiance.play('space')" data-track="space">📡 Space</button>
+                    <button class="amb-btn" onclick="Ambiance.play('white')" data-track="white">⚪ White</button>
+
                     <button class="amb-btn" onclick="Ambiance.stop()" data-track="none"
-                        style="background:#444;">OFF</button>
+                        style="background:#444; grid-column: span 4;">OFF (끄기)</button>
                 </div>
 
                 <div style="margin-top:15px;">
