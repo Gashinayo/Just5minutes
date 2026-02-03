@@ -41,8 +41,54 @@
                     Today: 0 / 3000 P</div>
             </div>
         </div>
-        <canvas id="activity-chart" width="300" height="150"></canvas>
-    </div>
+        <div id="p-stats" class="tab-content">
+            <div style="padding:20px;">
+                <h3>📊 통계 사령실</h3>
+            </div>
+
+            <!-- [v17.0] KPI Cards -->
+            <div class="stat-grid" style="padding:0 15px; margin-bottom:15px;">
+                <div class="stat-card">
+                    <div class="stat-label">🔥 총 집중</div>
+                    <div class="stat-value" id="stat-total">0h</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">📅 일일 평균</div>
+                    <div class="stat-value" id="stat-avg">0m</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">🏆 최고 기록</div>
+                    <div class="stat-value" id="stat-best">0m</div>
+                </div>
+            </div>
+
+            <!-- [v17.0] Insight Banner -->
+            <div id="insight-banner" class="stat-card"
+                style="margin:0 15px 15px 15px; display:flex; align-items:center; gap:10px; background:rgba(255, 215, 0, 0.1); border-color:var(--gold);">
+                <div style="font-size:24px;">💡</div>
+                <div>
+                    <div style="font-size:11px; color:var(--gold); font-weight:bold;">Focus Coach</div>
+                    <div id="insight-text" style="font-size:13px; color:#eee;">데이터 분석 중...</div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="stat-card" style="margin:0 15px; height:280px; position:relative;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-weight:bold; font-size:14px;">📈 집중 추세</span>
+                    <div class="toggle-group">
+                        <button class="toggle-btn active" onclick="switchChart('7d')" id="btn-7d">7일</button>
+                        <button class="toggle-btn" onclick="switchChart('30d')" id="btn-30d">30일</button>
+                    </div>
+                </div>
+                <canvas id="activity-chart" width="320" height="200"></canvas>
+            </div>
+
+            <!-- [v15.0] Quest Container (Restored) -->
+            <div style="padding:20px;">
+                <div id="quest-container" style="margin-top:10px;"></div>
+            </div>
+        </div>
     </div>
     <div id="p-achs" class="tab-content">
         <div class="config-panel">
