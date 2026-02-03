@@ -609,9 +609,14 @@ function showAchNotify(id) {
     showToast(ach.t, ach.d);
 }
 function saveStats() { localStorage.setItem('stats_v2', JSON.stringify(stats)); localStorage.setItem('pts', pts); }
+// [v17.0] Fixed: Removed obsolete stats-display
 function updateStatsUI() {
-    document.getElementById('stats-display').innerHTML = `<p>누적 집중: <b style="color:var(--blue);">${stats.totalMin || 0}</b>분</p><p>클릭/드래그: <b style="color:var(--blue);">${stats.totalClicks}</b>회</p><p>해금 칭호: <b style="color:var(--gold);">${ownedAchs.length}</b> / ${Object.keys(achDefs).length}</p>`;
-    document.getElementById('ui-pts').innerText = pts;
+    // document.getElementById('stats-display').innerHTML = ... (Removed)
+
+    // Update Global Points (Visible in Skin Tab)
+    const uiPts = document.getElementById('ui-pts');
+    if (uiPts) uiPts.innerText = pts;
+
     const sdp = document.getElementById('skin-daily-pts');
     if (sdp) sdp.innerText = stats.dailyEarned;
 }
