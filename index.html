@@ -50,21 +50,24 @@
             </div>
 
             <!-- 2. Activity Analysis (Grouped) -->
-            <div class="quest-card">
-                <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">📊 활동 분석</div>
-                <div class="stat-grid" style="gap:5px;">
-                    <div style="text-align:center;">
-                        <div class="stat-label" style="font-size:11px; color:#aaa;">🔥 총 집중</div>
-                        <div class="stat-value" id="stat-total" style="font-size:18px; font-weight:bold;">0h</div>
-                    </div>
-                    <div
-                        style="text-align:center; border-left:1px solid rgba(255,255,255,0.1); border-right:1px solid rgba(255,255,255,0.1);">
-                        <div class="stat-label" style="font-size:11px; color:#aaa;">📅 일일 평균</div>
-                        <div class="stat-value" id="stat-avg" style="font-size:18px; font-weight:bold;">0m</div>
-                    </div>
-                    <div style="text-align:center;">
-                        <div class="stat-label" style="font-size:11px; color:#aaa;">🏆 최고 기록</div>
-                        <div class="stat-value" id="stat-best" style="font-size:18px; font-weight:bold;">0m</div>
+            <!-- 2. Activity Analysis (Grouped) -->
+            <div style="padding:0 20px;">
+                <div class="quest-card">
+                    <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">📊 활동 분석</div>
+                    <div class="stat-grid" style="gap:5px;">
+                        <div style="text-align:center;">
+                            <div class="stat-label" style="font-size:11px; color:#aaa;">🔥 총 집중</div>
+                            <div class="stat-value" id="stat-total" style="font-size:18px; font-weight:bold;">0h</div>
+                        </div>
+                        <div
+                            style="text-align:center; border-left:1px solid rgba(255,255,255,0.1); border-right:1px solid rgba(255,255,255,0.1);">
+                            <div class="stat-label" style="font-size:11px; color:#aaa;">📅 일일 평균</div>
+                            <div class="stat-value" id="stat-avg" style="font-size:18px; font-weight:bold;">0m</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div class="stat-label" style="font-size:11px; color:#aaa;">🏆 최고 기록</div>
+                            <div class="stat-value" id="stat-best" style="font-size:18px; font-weight:bold;">0m</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -192,8 +195,7 @@
                     onclick="setUiBoxColor('#0f0f0f', 0.95)">🎨 색상 초기화</button>
             </div>
             <!-- [v11.3] Data Backup -->
-            <div class="admin-card"
-                style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
+            <div class="admin-card" style="padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
                 <p style="margin-bottom:10px; font-weight:bold;">💾 데이터 백업</p>
                 <div style="display:flex; gap:10px;">
                     <button class="btn" style="margin-top:0; background:var(--blue); flex:1; font-size:12px;"
@@ -203,8 +205,7 @@
                     <input type="file" id="import-file" style="display:none" onchange="importData(this)" accept=".json">
                 </div>
             </div>
-            <div class="admin-card"
-                style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
+            <div class="admin-card" style="padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
                 <p style="margin-bottom:10px; font-weight:bold;">⏳ 시간 제어</p>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
                     <button class="btn" style="padding:10px; font-size:12px; margin-top:0;" onclick="warpTime(300)">+5분
