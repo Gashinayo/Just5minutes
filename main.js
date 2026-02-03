@@ -877,6 +877,152 @@ const SFX = {
     }
 };
 
+// [v16.0] Soundscape Engine (Procedural Audio)
+const Ambiance = {
+    ctx: null,
+    activeNodes: [],
+    masterGain: null,
+    volume: 0.5,
+    currentTrack: 'none',
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = SFX.ctx || new (window.AudioContext || window.webkitAudioContext)();
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.value = this.volume;
+            this.masterGain.connect(this.ctx.destination);
+        }
+    },
+
+    setVolume(vol) {
+        this.volume = Math.max(0, Math.min(1, vol));
+        if (this.masterGain) this.masterGain.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.1);
+    },
+
+    stop() {
+        this.activeNodes.forEach(n => {
+            try { n.stop(); n.disconnect(); } catch (e) { }
+        });
+        this.activeNodes = [];
+        this.currentTrack = 'none';
+        updateAmbianceUI(); // Update UI if exists
+    },
+
+    play(track) {
+        this.init();
+        if (this.currentTrack === track && this.activeNodes.length > 0) return; // Already playing
+        this.stop(); // Stop previous
+
+        this.currentTrack = track;
+        if (track === 'none') return;
+
+        // Resume context if suspended
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+
+        switch (track) {
+            case 'rain': this._playRain(); break;
+            case 'fire': this._playFire(); break;
+            case 'forest': this._playForest(); break;
+        }
+        updateAmbianceUI();
+        showToast("🎵 분위기 전환", `${track.toUpperCase()} 사운드가 재생됩니다.`);
+    },
+
+    // --- Generators ---
+    _createNoise(type) {
+        const bufferSize = 2 * this.ctx.sampleRate;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            if (type === 'white') {
+                output[i] = white;
+            } else if (type === 'pink') {
+                // Paul Kellet's refined method
+                let b0, b1, b2, b3, b4, b5, b6;
+                b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
+                b0 = 0.99886 * b0 + white * 0.0555179;
+                b1 = 0.99332 * b1 + white * 0.075076;
+                b2 = 0.96900 * b2 + white * 0.1538520;
+                b3 = 0.86650 * b3 + white * 0.3104856;
+                b4 = 0.55000 * b4 + white * 0.5329522;
+                b5 = -0.7616 * b5 - white * 0.0168980;
+                output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                output[i] *= 0.11; // compensate for gain
+                b6 = white * 0.115926;
+            } else if (type === 'brown') {
+                let lastOut = 0;
+                lastOut = (lastOut + (0.02 * white)) / 1.02;
+                output[i] = lastOut * 3.5;
+                output[i] *= 0.11;
+            }
+        }
+        return buffer;
+    },
+
+    _playRain() {
+        // Pink Noise + LowPass Filter
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this._createNoise('pink');
+        noise.loop = true;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+
+        noise.connect(filter);
+        filter.connect(this.masterGain);
+        noise.start();
+        this.activeNodes.push(noise);
+    },
+
+    _playFire() {
+        // Brown Noise (Rumble) + Crackle (Random Clicks)
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this._createNoise('brown');
+        noise.loop = true;
+
+        // Low rumble
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 500;
+
+        noise.connect(filter);
+        filter.connect(this.masterGain);
+        noise.start();
+        this.activeNodes.push(noise);
+
+        // TODO: Add Crackle logic (needs ScriptProcessor or random clock, simpler for now just rumble)
+    },
+
+    _playForest() {
+        // Wind (Pink Noise with Bandpass LFO)
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this._createNoise('pink');
+        noise.loop = true;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 600;
+
+        // LFO for Wind Swells
+        const osc = this.ctx.createOscillator();
+        osc.frequency.value = 0.1; // Slow swell
+
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.3; // Base wind volume
+
+        // Modulate Gain not implemented simply, just steady wind for now to keep it safe
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        noise.start();
+        this.activeNodes.push(noise);
+    }
+};
+
 // [v10.4] Safe Initialization
 document.addEventListener('DOMContentLoaded', () => {
     try {
@@ -1074,4 +1220,40 @@ function renderQuestUI() {
         </div>
     `;
     updateFeverUI();
+}
+
+// [v16.0] Ambiance UI Helper
+function updateAmbianceUI() {
+    const status = document.getElementById('ambiance-status');
+    const container = document.getElementById('ambiance-controls');
+
+    if (status) {
+        let text = "OFF";
+        let color = "#555";
+        if (Ambiance.currentTrack !== 'none') {
+            text = Ambiance.currentTrack.toUpperCase();
+            color = "var(--blue)"; // Active color
+        }
+        status.innerText = text;
+        status.style.color = color;
+    }
+
+    // Update buttons state
+    if (container) {
+        container.querySelectorAll('.amb-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.track === Ambiance.currentTrack);
+        });
+    }
+}
+
+// [v16.0] Toggle Atmosphere Panel
+function toggleAmbiancePanel() {
+    const panel = document.getElementById('atmosphere-panel');
+    if (panel) {
+        panel.classList.toggle('active');
+        // Initial setup if not already
+        if (panel.classList.contains('active')) {
+            updateAmbianceUI();
+        }
+    }
 }

@@ -203,6 +203,29 @@
         <div id="char-container">
             <div id="char-title-tag"></div><img id="main-char" src="s_m_base.png" class="char-img">
         </div>
+
+        <!-- [v16.0] Atmosphere Control Panel -->
+        <button id="atmosphere-toggle" onclick="toggleAmbiancePanel()">🎧</button>
+        <div id="atmosphere-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span>Ambient Sound</span>
+                <span id="ambiance-status" style="font-size:12px; font-weight:bold; color:#555;">OFF</span>
+            </div>
+
+            <div id="ambiance-controls" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <button class="amb-btn" onclick="Ambiance.play('rain')" data-track="rain">🌧️ Rain</button>
+                <button class="amb-btn" onclick="Ambiance.play('fire')" data-track="fire">🔥 Fire</button>
+                <!-- <button class="amb-btn" onclick="Ambiance.play('forest')" data-track="forest">🌲 Forest</button> -->
+                <button class="amb-btn" onclick="Ambiance.stop()" data-track="none"
+                    style="background:#444;">OFF</button>
+            </div>
+
+            <div style="margin-top:15px;">
+                <span style="font-size:11px; color:#aaa;">Volume</span>
+                <input type="range" min="0" max="1" step="0.1" value="0.5" oninput="Ambiance.setVolume(this.value)"
+                    style="width:100%; margin-top:5px;">
+            </div>
+        </div>
     </div>
     <script src="main.js?v=15.0"></script>
 </body>
