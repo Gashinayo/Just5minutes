@@ -124,6 +124,9 @@ function initApp() {
     checkQuests(); // Initialize/Reset Quests based on Date
     feverEndTime = quests.feverEndTime || 0; // Sync global var
 
+    // [v17.2] Restore UI Color
+    setUiBoxColor(current.uiColor, current.uiOpacity);
+
     // Migration Logic
     if (stats.dailyEarned === undefined) stats.dailyEarned = 0;
     if (!stats.totalMin && localStorage.getItem('stats')) {
@@ -1401,5 +1404,34 @@ function updateAmbianceUI() {
     }
 }
 
-// [v16.0] Toggle Atmosphere Panel (Deprecated - Moved to Admin Tab)
-// function toggleAmbiancePanel() { ... }
+// [v17.2] UI Customization Logic
+function setUiBoxColor(hex, opacity) {
+    const root = document.documentElement;
+
+    // Get current values if null passed
+    if (!hex) hex = current.uiColor || '#0f0f0f';
+    if (opacity === null) opacity = current.uiOpacity || 0.95;
+
+    // Save to State
+    current.uiColor = hex;
+    current.uiOpacity = opacity;
+    localStorage.setItem('current', JSON.stringify(current));
+
+    // Convert Hex to RGBA
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+
+    // Apply Variable
+    root.style.setProperty('--ui-bg-color', rgba);
+
+    // Update Inputs (Sync UI)
+    const picker = document.getElementById('ui-color-picker');
+    const slider = document.getElementById('ui-opacity-slider');
+    if (picker && picker.value !== hex) picker.value = hex;
+    if (slider && slider.value != opacity) slider.value = opacity;
+}
+
+// [v16.0] Toggle Atmosphere Panel (Deprecated)
+// ...

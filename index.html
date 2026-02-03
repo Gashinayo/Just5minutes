@@ -50,7 +50,9 @@
             </div>
 
             <div style="padding:20px;">
-                <h3>📊 활동 분석</h3>
+                <div class="header-box">
+                    <h3>📊 활동 분석</h3>
+                </div>
             </div>
 
             <!-- 2. KPI Cards -->
@@ -174,6 +176,20 @@
                     <button id="btn-sfx-toggle" class="btn"
                         style="margin-top:0; padding:8px 15px; font-size:12px; width:auto;"
                         onclick="toggleSFX()">ON</button>
+                </div>
+
+                <hr style="border:0; border-top:1px solid #444; margin:10px 0;">
+
+                <!-- [v17.2] UI Box Color -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <span>UI 박스 색상</span>
+                    <input type="color" id="ui-color-picker" value="#0f0f0f" oninput="setUiBoxColor(this.value, null)"
+                        style="border:none; width:40px; height:25px; cursor:pointer;">
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:11px; color:#aaa;">투명도</span>
+                    <input type="range" id="ui-opacity-slider" min="0" max="1" step="0.05" value="0.95"
+                        oninput="setUiBoxColor(null, this.value)" style="flex:1;">
                 </div>
             </div>
             <!-- [v11.3] Data Backup -->
