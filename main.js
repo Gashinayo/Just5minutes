@@ -1104,8 +1104,13 @@ const Ambiance = {
         filter.type = 'lowpass';
         filter.frequency.value = 800;
 
+        // [v17.3] Volume Reduction
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.4; // Reduced from 1.0 implementation
+
         noise.connect(filter);
-        filter.connect(this.masterGain);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
         noise.start();
         this.activeNodes.push(noise);
     },
@@ -1250,7 +1255,7 @@ const Ambiance = {
         noise.loop = true;
 
         const gain = this.ctx.createGain();
-        gain.gain.value = 0.1; // White noise is harsh, lower volume
+        gain.gain.value = 0.03; // Very quiet background (was 0.1)
 
         noise.connect(gain);
         gain.connect(this.masterGain);
