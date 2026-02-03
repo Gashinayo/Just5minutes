@@ -53,10 +53,12 @@
 .sub-tab-area,
 .quest-card {
     background: var(--ui-bg-color);
+    color: var(--ui-text-color);
+    /* [v17.4] Smart Contrast */
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 12px;
-    transition: background 0.3s;
+    transition: background 0.3s, color 0.3s;
     /* Smooth transition for color change */
 }
 
@@ -111,6 +113,7 @@ body.deep-work-mode #app {
 body {
     background: var(--bg);
     color: #fff;
+    /* Default global text is white */
     font-family: 'Pretendard', sans-serif;
     display: flex;
     justify-content: center;

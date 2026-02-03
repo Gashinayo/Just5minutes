@@ -1562,8 +1562,14 @@ function setUiBoxColor(hex, opacity) {
     const b = parseInt(hex.slice(5, 7), 16);
     const rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
 
-    // Apply Variable
+    // [v17.4] Smart Contrast (Auto Text Color)
+    // Formula: (R*299 + G*587 + B*114) / 1000
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    const textColor = brightness > 150 ? '#000000' : '#ffffff'; // 150 threshold for better readability
+
+    // Apply Variables
     root.style.setProperty('--ui-bg-color', rgba);
+    root.style.setProperty('--ui-text-color', textColor);
 
     // Update Inputs (Sync UI)
     const picker = document.getElementById('ui-color-picker');
