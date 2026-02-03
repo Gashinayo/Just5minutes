@@ -97,137 +97,146 @@
             <div style="padding:20px;">
                 <h3>🛠️ 테스트 헬퍼</h3>
             </div>
-            <!-- [v11.1] System Settings -->
-            <div class="admin-card"
-                style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
-                <p style="margin-bottom:10px; font-weight:bold;">🔊 시스템 설정</p>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>효과음 (SFX)</span>
-                    <button id="btn-sfx-toggle" class="btn"
-                        style="margin-top:0; padding:8px 15px; font-size:12px; width:auto;"
-                        onclick="toggleSFX()">ON</button>
+            <div id="p-admin" class="tab-content">
+                <div style="padding:20px;">
+                    <h3>🛠️ 테스트 헬퍼</h3>
                 </div>
-            </div>
-            <!-- [v11.3] Data Backup -->
-            <div class="admin-card"
-                style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
-                <p style="margin-bottom:10px; font-weight:bold;">💾 데이터 백업</p>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn" style="margin-top:0; background:var(--blue); flex:1;"
-                        onclick="exportData()">내보내기</button>
-                    <button class="btn" style="margin-top:0; background:#444; flex:1;"
-                        onclick="document.getElementById('import-file').click()">불러오기</button>
-                    <input type="file" id="import-file" style="display:none" onchange="importData(this)" accept=".json">
-                </div>
-            </div>
-            <div class="admin-card"
-                style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
-                <p style="margin-bottom:10px; font-weight:bold;">⏳ 시간 제어</p>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                    <button class="btn" style="padding:10px; font-size:12px; margin-top:0;" onclick="warpTime(300)">+5분
-                        (예열스킵)</button>
-                    <button class="btn" style="padding:10px; font-size:12px; margin-top:0;"
-                        onclick="warpTime(3600)">+1시간</button>
-                    <button class="btn" style="padding:10px; font-size:12px; margin-top:0;"
-                        onclick="warpTime(-60)">-1분</button>
-                </div>
-            </div>
-            <div class="admin-card"
-                style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
-                <p style="margin-bottom:10px; font-weight:bold;">🧪 로직 검증 (Cheats)</p>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                    <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
-                        onclick="cheat('clicks')">+1000 클릭 (학대범)</button>
-                    <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
-                        onclick="cheatPoints()">+2999 일일 포인트 (한도 테스트)</button>
-                    <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
-                        onclick="cheat('time')">+10시간 집중 (강철)</button>
-                    <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
-                        onclick="cheat('offline')">7일 방치 시뮬 (탕아)</button>
-                    <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
-                        onclick="cheat('points')">+50,000P (만수르)</button>
-                    <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
-                        onclick="cheat('chart')">그래프 데이터 생성</button>
-                </div>
-            </div>
-            <div style="padding:0 20px;"><button class="btn" style="width:100%; background:#8b0000;"
-                    onclick="resetAll()">데이터 전체 초기화</button></div>
-        </div>
-        <div id="result-modal" class="modal">
-            <div class="modal-box">
-                <h2 style="color:var(--gold);">🌟 집중 성공!</h2>
-                <div style="font-size:42px; font-weight:800; margin:20px 0;" id="final-time">00:00</div><button
-                    class="btn" style="width:100%;" onclick="handleResult('continue')">계속하기</button><button class="btn"
-                    style="width:100%; background:#444; margin-top:0;" onclick="handleResult('reset')">중단하기</button>
-            </div>
-        </div>
-        <div id="encourage-modal" class="modal">
-            <div class="modal-box">
-                <h2 style="color:var(--gold);">🏃 조금 더?</h2>
-                <div style="display:flex; gap:12px; justify-content:center; margin-top:20px;"><button class="btn"
-                        style="background:#444;" onclick="handleEncourage('stop')">그만하기</button><button class="btn"
-                        onclick="handleEncourage('continue')">계속하기</button></div>
-            </div>
-        </div>
-        <!-- [v10.4] Emergency Reset UI -->
-        <div id="emergency-reset">
-            <h3>⚠️ 데이터 오류 감지</h3>
-            <p>앱을 실행하는데 실패했습니다.</p>
-            <button onclick="localStorage.clear(); location.reload();"
-                style="margin-top:15px; padding:10px 20px; font-weight:bold; cursor:pointer;">초기화 및 복구</button>
-        </div>
-        <!-- [v10.3] Help Modal -->
-        <div id="help-modal" class="modal">
-            <div class="modal-box" style="text-align:left; line-height:1.6;">
-                <h2 style="color:var(--gold); text-align:center;">💡 포인트 가이드</h2>
-                <ul style="padding-left:20px; color:#ddd; font-size:14px; list-style-type:circle;">
-                    <li><b>집중 포인트</b>: 10초당 1P (Deep Work 시)</li>
-                    <li><b>일일 한도</b>: 최대 3,000P</li>
-                    <li><b>출석 보너스</b>: 7일 연속 접속 시 1,000P</li>
-                    <li><b>가챠</b>: 500P 소모 (스킨/배경)</li>
-                </ul>
-                <button class="btn" style="width:100%; margin-top:20px;" onclick="hideModal('help-modal')">닫기</button>
-            </div>
-        </div>
-        <div id="gacha-modal" class="modal">
-            <div class="modal-box" id="gacha-waiting">
-                <div class="gacha-icon">🎁</div>
-                <h2>두근두근...</h2>
-            </div>
-            <div class="modal-box" id="gacha-result-view" style="display:none;">
-                <h2 style="color:var(--gold);">🎉 획득!</h2><img id="res-img"
-                    style="width:140px; height:140px; object-fit:contain; margin:10px;">
-                <p id="res-name" style="margin-bottom:15px;"></p><button class="btn" onclick="closeGacha()">확인</button>
-            </div>
-        </div>
-        <div id="char-container">
-            <div id="char-title-tag"></div><img id="main-char" src="s_m_base.png" class="char-img">
-        </div>
+                <!-- [v16.0] Atmosphere Control Panel (Moved) -->
+                <div class="admin-card"
+                    style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <p style="font-weight:bold;">🎧 분위기 (Soundscape)</p>
+                        <span id="ambiance-status" style="font-size:12px; font-weight:bold; color:#555;">OFF</span>
+                    </div>
 
-        <!-- [v16.0] Atmosphere Control Panel -->
-        <button id="atmosphere-toggle" onclick="toggleAmbiancePanel()">🎧</button>
-        <div id="atmosphere-panel">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <span>Ambient Sound</span>
-                <span id="ambiance-status" style="font-size:12px; font-weight:bold; color:#555;">OFF</span>
-            </div>
+                    <div id="ambiance-controls"
+                        style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px;">
+                        <button class="amb-btn" onclick="Ambiance.play('rain')" data-track="rain">🌧️ Rain</button>
+                        <button class="amb-btn" onclick="Ambiance.play('fire')" data-track="fire">🔥 Fire</button>
+                        <button class="amb-btn" onclick="Ambiance.stop()" data-track="none"
+                            style="background:#444;">OFF</button>
+                    </div>
 
-            <div id="ambiance-controls" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                <button class="amb-btn" onclick="Ambiance.play('rain')" data-track="rain">🌧️ Rain</button>
-                <button class="amb-btn" onclick="Ambiance.play('fire')" data-track="fire">🔥 Fire</button>
-                <!-- <button class="amb-btn" onclick="Ambiance.play('forest')" data-track="forest">🌲 Forest</button> -->
-                <button class="amb-btn" onclick="Ambiance.stop()" data-track="none"
-                    style="background:#444;">OFF</button>
-            </div>
+                    <div style="margin-top:15px;">
+                        <span style="font-size:11px; color:#aaa;">Volume</span>
+                        <input type="range" min="0" max="1" step="0.1" value="0.5"
+                            oninput="Ambiance.setVolume(this.value)" style="width:100%; margin-top:5px;">
+                    </div>
+                </div>
 
-            <div style="margin-top:15px;">
-                <span style="font-size:11px; color:#aaa;">Volume</span>
-                <input type="range" min="0" max="1" step="0.1" value="0.5" oninput="Ambiance.setVolume(this.value)"
-                    style="width:100%; margin-top:5px;">
+                <!-- [v11.1] System Settings -->
+                <div class="admin-card"
+                    style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
+                    <p style="margin-bottom:10px; font-weight:bold;">🔊 시스템 설정</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>효과음 (SFX)</span>
+                        <button id="btn-sfx-toggle" class="btn"
+                            style="margin-top:0; padding:8px 15px; font-size:12px; width:auto;"
+                            onclick="toggleSFX()">ON</button>
+                    </div>
+                </div>
+                <!-- [v11.3] Data Backup -->
+                <div class="admin-card"
+                    style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
+                    <p style="margin-bottom:10px; font-weight:bold;">💾 데이터 백업</p>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn" style="margin-top:0; background:var(--blue); flex:1;"
+                            onclick="exportData()">내보내기</button>
+                        <button class="btn" style="margin-top:0; background:#444; flex:1;"
+                            onclick="document.getElementById('import-file').click()">불러오기</button>
+                        <input type="file" id="import-file" style="display:none" onchange="importData(this)"
+                            accept=".json">
+                    </div>
+                </div>
+                <div class="admin-card"
+                    style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
+                    <p style="margin-bottom:10px; font-weight:bold;">⏳ 시간 제어</p>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                        <button class="btn" style="padding:10px; font-size:12px; margin-top:0;"
+                            onclick="warpTime(300)">+5분
+                            (예열스킵)</button>
+                        <button class="btn" style="padding:10px; font-size:12px; margin-top:0;"
+                            onclick="warpTime(3600)">+1시간</button>
+                        <button class="btn" style="padding:10px; font-size:12px; margin-top:0;"
+                            onclick="warpTime(-60)">-1분</button>
+                    </div>
+                </div>
+                <div class="admin-card"
+                    style="background:var(--glass); padding:15px; border-radius:15px; border:1px solid #333; margin:10px 15px;">
+                    <p style="margin-bottom:10px; font-weight:bold;">🧪 로직 검증 (Cheats)</p>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                        <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
+                            onclick="cheat('clicks')">+1000 클릭 (학대범)</button>
+                        <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
+                            onclick="cheatPoints()">+2999 일일 포인트 (한도 테스트)</button>
+                        <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
+                            onclick="cheat('time')">+10시간 집중 (강철)</button>
+                        <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
+                            onclick="cheat('offline')">7일 방치 시뮬 (탕아)</button>
+                        <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
+                            onclick="cheat('points')">+50,000P (만수르)</button>
+                        <button class="btn" style="padding:10px; font-size:12px; margin-top:0; background:#444;"
+                            onclick="cheat('chart')">그래프 데이터 생성</button>
+                    </div>
+                </div>
+                <div style="padding:0 20px;"><button class="btn" style="width:100%; background:#8b0000;"
+                        onclick="resetAll()">데이터 전체 초기화</button></div>
+            </div>
+            <div id="result-modal" class="modal">
+                <div class="modal-box">
+                    <h2 style="color:var(--gold);">🌟 집중 성공!</h2>
+                    <div style="font-size:42px; font-weight:800; margin:20px 0;" id="final-time">00:00</div><button
+                        class="btn" style="width:100%;" onclick="handleResult('continue')">계속하기</button><button
+                        class="btn" style="width:100%; background:#444; margin-top:0;"
+                        onclick="handleResult('reset')">중단하기</button>
+                </div>
+            </div>
+            <div id="encourage-modal" class="modal">
+                <div class="modal-box">
+                    <h2 style="color:var(--gold);">🏃 조금 더?</h2>
+                    <div style="display:flex; gap:12px; justify-content:center; margin-top:20px;"><button class="btn"
+                            style="background:#444;" onclick="handleEncourage('stop')">그만하기</button><button class="btn"
+                            onclick="handleEncourage('continue')">계속하기</button></div>
+                </div>
+            </div>
+            <!-- [v10.4] Emergency Reset UI -->
+            <div id="emergency-reset">
+                <h3>⚠️ 데이터 오류 감지</h3>
+                <p>앱을 실행하는데 실패했습니다.</p>
+                <button onclick="localStorage.clear(); location.reload();"
+                    style="margin-top:15px; padding:10px 20px; font-weight:bold; cursor:pointer;">초기화 및 복구</button>
+            </div>
+            <!-- [v10.3] Help Modal -->
+            <div id="help-modal" class="modal">
+                <div class="modal-box" style="text-align:left; line-height:1.6;">
+                    <h2 style="color:var(--gold); text-align:center;">💡 포인트 가이드</h2>
+                    <ul style="padding-left:20px; color:#ddd; font-size:14px; list-style-type:circle;">
+                        <li><b>집중 포인트</b>: 10초당 1P (Deep Work 시)</li>
+                        <li><b>일일 한도</b>: 최대 3,000P</li>
+                        <li><b>출석 보너스</b>: 7일 연속 접속 시 1,000P</li>
+                        <li><b>가챠</b>: 500P 소모 (스킨/배경)</li>
+                    </ul>
+                    <button class="btn" style="width:100%; margin-top:20px;"
+                        onclick="hideModal('help-modal')">닫기</button>
+                </div>
+            </div>
+            <div id="gacha-modal" class="modal">
+                <div class="modal-box" id="gacha-waiting">
+                    <div class="gacha-icon">🎁</div>
+                    <h2>두근두근...</h2>
+                </div>
+                <div class="modal-box" id="gacha-result-view" style="display:none;">
+                    <h2 style="color:var(--gold);">🎉 획득!</h2><img id="res-img"
+                        style="width:140px; height:140px; object-fit:contain; margin:10px;">
+                    <p id="res-name" style="margin-bottom:15px;"></p><button class="btn"
+                        onclick="closeGacha()">확인</button>
+                </div>
+            </div>
+            <div id="char-container">
+                <div id="char-title-tag"></div><img id="main-char" src="s_m_base.png" class="char-img">
             </div>
         </div>
-    </div>
-    <script src="main.js?v=15.0"></script>
+        <script src="main.js?v=16.0"></script>
 </body>
 
 </html>

@@ -988,8 +988,13 @@ const Ambiance = {
         filter.type = 'lowpass';
         filter.frequency.value = 500;
 
+        // [Fix] Boost Fire Volume
+        const gain = this.ctx.createGain();
+        gain.gain.value = 3.0; // Significant boost for Brown noise
+
         noise.connect(filter);
-        filter.connect(this.masterGain);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
         noise.start();
         this.activeNodes.push(noise);
 
@@ -1246,14 +1251,5 @@ function updateAmbianceUI() {
     }
 }
 
-// [v16.0] Toggle Atmosphere Panel
-function toggleAmbiancePanel() {
-    const panel = document.getElementById('atmosphere-panel');
-    if (panel) {
-        panel.classList.toggle('active');
-        // Initial setup if not already
-        if (panel.classList.contains('active')) {
-            updateAmbianceUI();
-        }
-    }
-}
+// [v16.0] Toggle Atmosphere Panel (Deprecated - Moved to Admin Tab)
+// function toggleAmbiancePanel() { ... }
