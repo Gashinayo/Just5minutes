@@ -49,25 +49,23 @@
                 <div id="quest-container" style="margin-top:10px;"></div>
             </div>
 
-            <div style="padding:20px;">
-                <div class="header-box">
-                    <h3>📊 활동 분석</h3>
-                </div>
-            </div>
-
-            <!-- 2. KPI Cards -->
-            <div class="stat-grid" style="padding:0 15px; margin-bottom:15px;">
-                <div class="stat-card">
-                    <div class="stat-label">🔥 총 집중</div>
-                    <div class="stat-value" id="stat-total">0h</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">📅 일일 평균</div>
-                    <div class="stat-value" id="stat-avg">0m</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">🏆 최고 기록</div>
-                    <div class="stat-value" id="stat-best">0m</div>
+            <!-- 2. Activity Analysis (Grouped) -->
+            <div class="quest-card">
+                <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">📊 활동 분석</div>
+                <div class="stat-grid" style="gap:5px;">
+                    <div style="text-align:center;">
+                        <div class="stat-label" style="font-size:11px; color:#aaa;">🔥 총 집중</div>
+                        <div class="stat-value" id="stat-total" style="font-size:18px; font-weight:bold;">0h</div>
+                    </div>
+                    <div
+                        style="text-align:center; border-left:1px solid rgba(255,255,255,0.1); border-right:1px solid rgba(255,255,255,0.1);">
+                        <div class="stat-label" style="font-size:11px; color:#aaa;">📅 일일 평균</div>
+                        <div class="stat-value" id="stat-avg" style="font-size:18px; font-weight:bold;">0m</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div class="stat-label" style="font-size:11px; color:#aaa;">🏆 최고 기록</div>
+                        <div class="stat-value" id="stat-best" style="font-size:18px; font-weight:bold;">0m</div>
+                    </div>
                 </div>
             </div>
 
