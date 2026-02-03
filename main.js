@@ -1483,7 +1483,7 @@ function renderQuestUI() {
     });
 
     container.innerHTML = `
-        <div style="margin-bottom:15px; background:rgba(255,255,255,0.05); padding:10px; border-radius:10px;">
+        <div class="quest-card">
             <div style="font-weight:bold; margin-bottom:5px;">📅 일일 퀘스트</div>
             <div style="display:flex; justify-content:space-between; font-size:13px;">
                 <span>${q1} 출석</span>
@@ -1491,7 +1491,7 @@ function renderQuestUI() {
                 <span onclick="tryLuckyBox()" style="cursor:${quests.daily.lucky ? 'default' : 'pointer'}">${q3} 랜덤박스</span>
             </div>
         </div>
-        <div style="margin-bottom:15px; background:rgba(255,255,255,0.05); padding:10px; border-radius:10px;">
+        <div class="quest-card">
             <div style="font-weight:bold; margin-bottom:5px;">📅 주간 도전 (${weekHours} / 25.0 h)</div>
             <div style="font-size:12px;">${wHtml}</div>
         </div>

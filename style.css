@@ -6,6 +6,9 @@
     --orange: #F97316;
     --bg: #000;
     --glass: rgba(15, 15, 15, 0.95);
+    /* Fallback / Default */
+    --ui-bg-color: rgba(15, 15, 15, 0.95);
+    /* [v17.2] Customizable UI Box Color */
     --title-color: #5EEAD4;
     /* [v10.4] Z-Index Architecture */
     --z-bg: 0;
@@ -16,6 +19,46 @@
     --z-toast: 5000;
     --z-emergency: 9999;
 }
+
+/* [v17.2] Header Box for Readability */
+.header-box {
+    background: var(--ui-bg-color);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    margin-bottom: 15px;
+    transition: background 0.3s;
+}
+
+/* [v17.0] Dashboard Styles */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+/* ... (skip unchanged) ... */
+
+/* [v17.2] Unified Card Style using Variable */
+.stat-card,
+.admin-card,
+.config-panel,
+.sub-tab-area {
+    background: var(--ui-bg-color);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    transition: background 0.3s;
+    /* Smooth transition for color change */
+}
+
+/* Specific overrides if needed, but keeping it unified for now */
+.stat-card {
+    text-align: center;
+}
+
+/* ... */
 
 /* [v12.0] Visual Polish: Deep Work Dimming */
 #app::before {
@@ -41,6 +84,7 @@ body.deep-work-mode #app::before {
 /* Enhancing Focus Effect */
 body.deep-work-mode #app {
     /* No filter on app itself to prevent double darkening of UI */
+    background-color: #000;
 }
 
 /* Ensure Timer is above dimming */
@@ -277,11 +321,8 @@ body {
 }
 
 .config-panel {
-    background: var(--glass);
-    margin: 15px;
-    padding: 18px;
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Background handled by unified rule */
+    margin-bottom: 15px;
 }
 
 .pos-btn {
@@ -309,7 +350,7 @@ body {
 
 /* [수정] 스킨 아이템 상자 디자인 */
 .skin-item {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--ui-bg-color);
     /* 반투명 상자 */
     aspect-ratio: 1/1;
     border-radius: 12px;
@@ -337,7 +378,7 @@ body {
 
 /* 칭호 도감 그리드 (v9.4 복구) */
 .ach-item {
-    background: var(--glass);
+    background: var(--ui-bg-color);
     aspect-ratio: 1/1;
     border-radius: 12px;
     display: flex;
@@ -466,4 +507,79 @@ body {
     text-align: center;
     z-index: var(--z-emergency);
     display: none;
+}
+
+/* [v16.0] Atmosphere UI */
+#atmosphere-toggle {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: var(--z-ui);
+    backdrop-filter: blur(5px);
+    transition: 0.3s;
+}
+
+#atmosphere-toggle:hover {
+    background: var(--blue);
+    transform: scale(1.1);
+}
+
+#atmosphere-panel {
+    position: absolute;
+    top: 105px;
+    right: 20px;
+    width: 200px;
+    background: var(--glass);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 15px;
+    z-index: var(--z-ui);
+    display: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: slide-in-right 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#atmosphere-panel.active {
+    display: block;
+}
+
+@keyframes slide-in-right {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.amb-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid transparent;
+    color: #aaa;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.2s;
+}
+
+.amb-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.amb-btn.active {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: var(--blue);
+    color: var(--blue);
+    font-weight: bold;
 }
