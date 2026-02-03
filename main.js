@@ -1117,129 +1117,140 @@ function useFeverItem() {
 }
 
 // [v10.3] Earn Points Helper (Modified for v16.2)
+// [v10.3] Earn Points Helper (Modified for v16.2)
 function earnPoints(amount, force, ignoreLimit = false) {
-    // [v10.3] Earn Points logic moved to helper with v16.2 update
-    // Original earnPoints removed to avoid duplication.
+    if (amount <= 0) return;
 
-    function triggerFever() {
-        // Called when 25 min focus complete
-        // [v16.2] Only Give Item ONCE (First time completion)
-        // Removed Alert for subsequent completion
-        if (!quests.daily.focus25) {
-            quests.daily.focus25 = true;
-            earnPoints(300, true);
-
-            // Give Item
-            if (stats.dailyEarned < 3000) { // Keep limit check for item? User said "first time get potion". 
-                // Logic: if !focus25, then give item.
-                // But wait, if they are capped on points, do they still get item?
-                // "1. Exclude ... from limit" -> Attendance/Rubox.
-                // "2. First 25 min -> Get Potion".
-                // Assuming Item is independent of Point Limit for the quest reward itself?
-                // Original code checked point limit. I will keep point limit check effectively unless user said explicitly otherwise.
-                // But to be safe and generous (it's a quest reward), and since it's ONCE a day:
-                quests.inventory.feverItem++;
-                alert("일일 퀘스트 완료: 25분 집중 (300P)\n🔥 보상: 피버 물약 1개 획득!");
-            } else {
-                alert("일일 퀘스트 완료: 25분 집중 (300P)\n(일일 포인트 한도 초과로 물약 미지급)");
-            }
-            saveQuests();
-            renderQuestUI();
-        }
+    // [v16.2] Ignore Limit Logic
+    if (!ignoreLimit && stats.dailyEarned >= 3000 && !force) {
+        return;
     }
 
-    function claimWeeklyReward(step) {
-        if (quests.weekly.claimedSteps.includes(step)) return;
-        if (quests.weekly.progressMin >= step * 60) {
-            quests.weekly.claimedSteps.push(step);
-            earnPoints(500, true, true); // [v16.2] Ignore Limit for Weekly
-            saveQuests();
-            renderQuestUI();
-            alert(`주간 퀘스트 완료: ${step}시간 달성 (500P)`);
+    // Limit Check
+    if (!ignoreLimit) {
+        const remaining = 3000 - stats.dailyEarned;
+        if (remaining <= 0) return;
+        if (amount > remaining) amount = remaining;
+    }
+
+    pts += amount;
+    if (!ignoreLimit) stats.dailyEarned += amount;
+
+    updateDisp();
+    saveStats();
+}
+
+function triggerFever() {
+    // Called when 25 min focus complete
+    // [v16.2] Only Give Item ONCE (First time completion)
+    if (!quests.daily.focus25) {
+        quests.daily.focus25 = true;
+        earnPoints(300, true);
+
+        // Give Item
+        if (stats.dailyEarned < 3000) {
+            quests.inventory.feverItem++;
+            alert("일일 퀘스트 완료: 25분 집중 (300P)\n🔥 보상: 피버 물약 1개 획득!");
         } else {
-            alert("아직 달성하지 못했습니다.");
+            alert("일일 퀘스트 완료: 25분 집중 (300P)\n(일일 포인트 한도 초과로 물약 미지급)");
         }
-    }
-
-    function tryLuckyBox() {
-        if (quests.daily.lucky) {
-            alert("오늘은 이미 열었습니다.");
-            return;
-        }
-        quests.daily.lucky = true;
-
-        // [Balanced Probabilities]
-        const rand = Math.random() * 100;
-        let reward = 10;
-        if (rand < 2) reward = 500; // 2%
-        else if (rand < 10) reward = 200; // 8%
-        else if (rand < 30) reward = 100; // 20%
-        else if (rand < 60) reward = 50; // 30%
-
-        earnPoints(reward, true, true); // [v16.2] Ignore Limit for Lucky Box
         saveQuests();
         renderQuestUI();
-        alert(`🎁 행운의 상자 결과: ${reward}P 획득!`);
     }
+}
 
-    function updateFeverUI() {
-        const now = Date.now();
-        const isFever = now < feverEndTime;
-        const btn = document.getElementById('btn-use-fever');
-        const timeEl = document.getElementById('time');
+function claimWeeklyReward(step) {
+    if (quests.weekly.claimedSteps.includes(step)) return;
+    if (quests.weekly.progressMin >= step * 60) {
+        quests.weekly.claimedSteps.push(step);
+        earnPoints(500, true, true); // [v16.2] Ignore Limit for Weekly
+        saveQuests();
+        renderQuestUI();
+        alert(`주간 퀘스트 완료: ${step}시간 달성 (500P)`);
+    } else {
+        alert("아직 달성하지 못했습니다.");
+    }
+}
 
-        if (btn) {
-            if (isFever) {
-                const remain = Math.ceil((feverEndTime - now) / 1000);
-                const m = Math.floor(remain / 60);
-                const s = remain % 60;
-                btn.innerText = `🔥 활성화 중 (${m}:${s < 10 ? '0' + s : s})`;
-                btn.disabled = true;
-                btn.style.background = '#ff4500';
-                if (timeEl) {
-                    timeEl.style.color = '#ff4500';
-                    timeEl.style.textShadow = '0 0 15px #ff0000';
-                }
-            } else {
-                btn.innerText = `사용하기 (보유: ${quests.inventory.feverItem})`;
-                btn.disabled = quests.inventory.feverItem === 0;
-                btn.style.background = quests.inventory.feverItem > 0 ? 'var(--gold)' : '#555';
+function tryLuckyBox() {
+    if (quests.daily.lucky) {
+        alert("오늘은 이미 열었습니다.");
+        return;
+    }
+    quests.daily.lucky = true;
 
-                // Revert Style if not in deep work (Deep work has its own style, but fever overrides color)
-                // Ideally we check isDeepWork to know if we should revert to white or something else.
-                // But main loop updates display constantly.
-                if (timeEl) {
-                    // [Fix] Don't force white color, let CSS handle it (Blue when idle, White when running)
-                    timeEl.style.color = '';
-                    timeEl.style.textShadow = 'none';
-                }
+    // [Balanced Probabilities]
+    const rand = Math.random() * 100;
+    let reward = 10;
+    if (rand < 2) reward = 500; // 2%
+    else if (rand < 10) reward = 200; // 8%
+    else if (rand < 30) reward = 100; // 20%
+    else if (rand < 60) reward = 50; // 30%
+
+    earnPoints(reward, true, true); // [v16.2] Ignore Limit for Lucky Box
+    saveQuests();
+    renderQuestUI();
+    alert(`🎁 행운의 상자 결과: ${reward}P 획득!`);
+}
+
+function updateFeverUI() {
+    const now = Date.now();
+    const isFever = now < feverEndTime;
+    const btn = document.getElementById('btn-use-fever');
+    const timeEl = document.getElementById('time');
+
+    if (btn) {
+        if (isFever) {
+            const remain = Math.ceil((feverEndTime - now) / 1000);
+            const m = Math.floor(remain / 60);
+            const s = remain % 60;
+            btn.innerText = `🔥 활성화 중 (${m}:${s < 10 ? '0' + s : s})`;
+            btn.disabled = true;
+            btn.style.background = '#ff4500';
+            if (timeEl) {
+                timeEl.style.color = '#ff4500';
+                timeEl.style.textShadow = '0 0 15px #ff0000';
+            }
+        } else {
+            btn.innerText = `사용하기 (보유: ${quests.inventory.feverItem})`;
+            btn.disabled = quests.inventory.feverItem === 0;
+            btn.style.background = quests.inventory.feverItem > 0 ? 'var(--gold)' : '#555';
+
+            // Revert Style if not in deep work (Deep work has its own style, but fever overrides color)
+            // Ideally we check isDeepWork to know if we should revert to white or something else.
+            // But main loop updates display constantly.
+            if (timeEl) {
+                // [Fix] Don't force white color, let CSS handle it (Blue when idle, White when running)
+                timeEl.style.color = '';
+                timeEl.style.textShadow = 'none';
             }
         }
     }
+}
 
-    function renderQuestUI() {
-        const container = document.getElementById('quest-container');
-        if (!container) return;
+function renderQuestUI() {
+    const container = document.getElementById('quest-container');
+    if (!container) return;
 
-        // Daily UI
-        const q1 = quests.daily.checkIn ? '✅' : '⬜';
-        const q2 = quests.daily.focus25 ? '✅' : '⬜';
-        const q3 = quests.daily.lucky ? '✅' : '🎁'; // Clickable
+    // Daily UI
+    const q1 = quests.daily.checkIn ? '✅' : '⬜';
+    const q2 = quests.daily.focus25 ? '✅' : '⬜';
+    const q3 = quests.daily.lucky ? '✅' : '🎁'; // Clickable
 
-        // Weekly UI
-        const weekMin = quests.weekly.progressMin;
-        const weekHours = (weekMin / 60).toFixed(1);
+    // Weekly UI
+    const weekMin = quests.weekly.progressMin;
+    const weekHours = (weekMin / 60).toFixed(1);
 
-        let wHtml = '';
-        [5, 10, 15, 20, 25].forEach(step => {
-            const done = quests.weekly.claimedSteps.includes(step);
-            const canClaim = !done && (weekMin >= step * 60);
-            const style = done ? 'color:#888; text-decoration:line-through' : (canClaim ? 'color:var(--gold); font-weight:bold; cursor:pointer' : 'color:#555');
-            const click = canClaim ? `onclick="claimWeeklyReward(${step})"` : '';
-            wHtml += `<span style="${style}; margin-right:8px;" ${click}>[${step}h]</span>`;
-        });
+    let wHtml = '';
+    [5, 10, 15, 20, 25].forEach(step => {
+        const done = quests.weekly.claimedSteps.includes(step);
+        const canClaim = !done && (weekMin >= step * 60);
+        const style = done ? 'color:#888; text-decoration:line-through' : (canClaim ? 'color:var(--gold); font-weight:bold; cursor:pointer' : 'color:#555');
+        const click = canClaim ? `onclick="claimWeeklyReward(${step})"` : '';
+        wHtml += `<span style="${style}; margin-right:8px;" ${click}>[${step}h]</span>`;
+    });
 
-        container.innerHTML = `
+    container.innerHTML = `
         <div style="margin-bottom:15px; background:rgba(255,255,255,0.05); padding:10px; border-radius:10px;">
             <div style="font-weight:bold; margin-bottom:5px;">📅 일일 퀘스트</div>
             <div style="display:flex; justify-content:space-between; font-size:13px;">
@@ -1260,32 +1271,32 @@ function earnPoints(amount, force, ignoreLimit = false) {
             </div>
         </div>
     `;
-        updateFeverUI();
+    updateFeverUI();
+}
+
+// [v16.0] Ambiance UI Helper
+function updateAmbianceUI() {
+    const status = document.getElementById('ambiance-status');
+    const container = document.getElementById('ambiance-controls');
+
+    if (status) {
+        let text = "OFF";
+        let color = "#555";
+        if (Ambiance.currentTrack !== 'none') {
+            text = Ambiance.currentTrack.toUpperCase();
+            color = "var(--blue)"; // Active color
+        }
+        status.innerText = text;
+        status.style.color = color;
     }
 
-    // [v16.0] Ambiance UI Helper
-    function updateAmbianceUI() {
-        const status = document.getElementById('ambiance-status');
-        const container = document.getElementById('ambiance-controls');
-
-        if (status) {
-            let text = "OFF";
-            let color = "#555";
-            if (Ambiance.currentTrack !== 'none') {
-                text = Ambiance.currentTrack.toUpperCase();
-                color = "var(--blue)"; // Active color
-            }
-            status.innerText = text;
-            status.style.color = color;
-        }
-
-        // Update buttons state
-        if (container) {
-            container.querySelectorAll('.amb-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.track === Ambiance.currentTrack);
-            });
-        }
+    // Update buttons state
+    if (container) {
+        container.querySelectorAll('.amb-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.track === Ambiance.currentTrack);
+        });
     }
+}
 
 // [v16.0] Toggle Atmosphere Panel (Deprecated - Moved to Admin Tab)
 // function toggleAmbiancePanel() { ... }
