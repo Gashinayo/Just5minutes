@@ -42,11 +42,18 @@
             </div>
         </div>
         <div id="p-stats" class="tab-content">
-            <div style="padding:20px;">
-                <h3>📊 통계 사령실</h3>
+            <!-- [v17.1] Order: 1. Quests 2. KPIs 3. Chart -->
+
+            <!-- 1. Quests & Inventory -->
+            <div style="padding:20px 20px 0 20px;">
+                <div id="quest-container" style="margin-top:10px;"></div>
             </div>
 
-            <!-- [v17.0] KPI Cards -->
+            <div style="padding:20px;">
+                <h3>📊 활동 분석</h3>
+            </div>
+
+            <!-- 2. KPI Cards -->
             <div class="stat-grid" style="padding:0 15px; margin-bottom:15px;">
                 <div class="stat-card">
                     <div class="stat-label">🔥 총 집중</div>
@@ -62,7 +69,7 @@
                 </div>
             </div>
 
-            <!-- [v17.0] Insight Banner -->
+            <!-- Insight Banner -->
             <div id="insight-banner" class="stat-card"
                 style="margin:0 15px 15px 15px; display:flex; align-items:center; gap:10px; background:rgba(255, 215, 0, 0.1); border-color:var(--gold);">
                 <div style="font-size:24px;">💡</div>
@@ -72,7 +79,7 @@
                 </div>
             </div>
 
-            <!-- Chart Section -->
+            <!-- 3. Chart Section -->
             <div class="stat-card" style="margin:0 15px; height:280px; position:relative;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <span style="font-weight:bold; font-size:14px;">📈 집중 추세</span>
@@ -82,11 +89,6 @@
                     </div>
                 </div>
                 <canvas id="activity-chart" width="320" height="200"></canvas>
-            </div>
-
-            <!-- [v15.0] Quest Container (Restored) -->
-            <div style="padding:20px;">
-                <div id="quest-container" style="margin-top:10px;"></div>
             </div>
         </div>
         <div id="p-achs" class="tab-content">
