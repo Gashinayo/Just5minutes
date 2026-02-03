@@ -462,8 +462,8 @@ function startGacha() {
     }, 2500);
 }
 
-// [v10.2] Non-blocking Toast
-function showToast(title, desc) {
+// [v10.2] Non-blocking Toast (Updated v16.2 for Custom Icons)
+function showToast(title, desc, icon = '🏆') {
     const el = document.getElementById('ach-toast');
     if (!el) return;
 
@@ -472,6 +472,9 @@ function showToast(title, desc) {
         clearTimeout(toastTimer);
         toastTimer = null;
     }
+
+    const iconEl = document.getElementById('toast-icon');
+    if (iconEl) iconEl.innerText = icon;
 
     document.getElementById('toast-title').innerText = title;
     document.getElementById('toast-desc').innerText = desc;
@@ -944,10 +947,12 @@ const Ambiance = {
         switch (track) {
             case 'rain': this._playRain(); break;
             case 'fire': this._playFire(); break;
+            case 'space': this._playSpace(); break;
+            case 'white': this._playWhite(); break;
             case 'forest': this._playForest(); break;
         }
         updateAmbianceUI();
-        showToast("🎵 분위기 전환", `${track.toUpperCase()} 사운드가 재생됩니다.`);
+        showToast("분위기 전환", `${track.toUpperCase()} 사운드가 재생됩니다.`, "🎵");
     },
 
     // --- Generators ---
