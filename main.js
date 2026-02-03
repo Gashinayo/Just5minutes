@@ -124,8 +124,7 @@ function initApp() {
     checkQuests(); // Initialize/Reset Quests based on Date
     feverEndTime = quests.feverEndTime || 0; // Sync global var
 
-    // [v17.2] Restore UI Color
-    setUiBoxColor(current.uiColor, current.uiOpacity);
+
 
     // Migration Logic
     if (stats.dailyEarned === undefined) stats.dailyEarned = 0;
@@ -138,6 +137,9 @@ function initApp() {
 
     ownedAchs = safeParse('ownedAchs', []);
     current = safeParse('current', { char: 's_m_base.png', bg: 'bg_000.png', title: '', titlePos: 'top', titleColor: '#FFD700' });
+
+    // [v17.2] Restore UI Color (Moved to after current is defined)
+    setUiBoxColor(current.uiColor, current.uiOpacity);
 
     // [CRITICAL FIX] Restore 'owned' to Object structure
     const defaultOwned = { char: ['s_m_base.png', 's_f_base.png'], bg: ['bg_000.png', 'bg_001.png', 'bg_002.png', 'bg_003.png'] };
@@ -1048,9 +1050,12 @@ const Ambiance = {
         switch (track) {
             case 'rain': this._playRain(); break;
             case 'fire': this._playFire(); break;
+            case 'forest': this._playForest(); break;
+            case 'ocean': this._playOcean(); break;
+            case 'stream': this._playStream(); break;
+            case 'fan': this._playFan(); break;
             case 'space': this._playSpace(); break;
             case 'white': this._playWhite(); break;
-            case 'forest': this._playForest(); break;
         }
         updateAmbianceUI();
         showToast("분위기 전환", `${track.toUpperCase()} 사운드가 재생됩니다.`, "🎵");
@@ -1153,6 +1158,122 @@ const Ambiance = {
         gain.connect(this.masterGain);
         noise.start();
         this.activeNodes.push(noise);
+    },
+
+    _playOcean() {
+        // Pink Noise + Modulated LowPass (Waves)
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this._createNoise('pink');
+        noise.loop = true;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 500;
+
+        // Peak filter for "froth" sound
+        const filter2 = this.ctx.createBiquadFilter();
+        filter2.type = 'peaking';
+        filter2.frequency.value = 1000;
+        filter2.gain.value = 5;
+
+        // Wave LFO
+        const osc = this.ctx.createOscillator();
+        osc.frequency.value = 0.1; // 10s wave cycle
+
+        const oscGain = this.ctx.createGain();
+        oscGain.gain.value = 400; // Modulate frequency by +/- 400Hz
+
+        osc.connect(oscGain);
+        oscGain.connect(filter.frequency);
+
+        noise.connect(filter);
+        filter.connect(filter2);
+        filter2.connect(this.masterGain);
+
+        noise.start();
+        osc.start();
+        this.activeNodes.push(noise, osc);
+    },
+
+    _playStream() {
+        // Brown Noise + HighPass (Rushing Water)
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this._createNoise('brown');
+        noise.loop = true;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 400;
+
+        // Reduce volume slightly as brown noise is loud
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.8;
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        noise.start();
+        this.activeNodes.push(noise);
+    },
+
+    _playFan() {
+        // Brown Noise + LowPass + Slight Drone
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this._createNoise('brown');
+        noise.loop = true;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 200;
+
+        // Drone
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = 60; // 60Hz hum
+        const oscGain = this.ctx.createGain();
+        oscGain.gain.value = 0.05;
+
+        noise.connect(filter);
+        filter.connect(this.masterGain);
+        osc.connect(oscGain);
+        oscGain.connect(this.masterGain);
+
+        noise.start();
+        osc.start();
+        this.activeNodes.push(noise, osc);
+    },
+
+    _playWhite() {
+        // Pure White Noise
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = this._createNoise('white');
+        noise.loop = true;
+
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.1; // White noise is harsh, lower volume
+
+        noise.connect(gain);
+        gain.connect(this.masterGain);
+        noise.start();
+        this.activeNodes.push(noise);
+    },
+
+    _playSpace() {
+        // Deep Drone (Low Sine) + Reverb-ish effect via multiple oscillators
+        const freqs = [55, 110, 220]; // A1, A2, A3
+        freqs.forEach(f => {
+            const osc = this.ctx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.value = f;
+
+            const gain = this.ctx.createGain();
+            gain.gain.value = 0.05 / (freqs.indexOf(f) + 1); // Higher pitch quieter
+
+            osc.connect(gain);
+            gain.connect(this.masterGain);
+            osc.start();
+            this.activeNodes.push(osc);
+        });
     }
 };
 
