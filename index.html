@@ -19,10 +19,11 @@
         <h1 style="position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);">Pixel Lab - 5분 몰입 타이머
             및 캐릭터 수집</h1>
 
-        <div id="ach-toast"
-            style="position:fixed; top:-180px; left:50%; transform:translateX(-50%); background:var(--glass); border:2px solid var(--gold); padding:15px 25px; border-radius:20px; z-index:5000; transition:0.6s; text-align:center; width:80%; pointer-events:none;">
+        <div id="ach-toast" onclick="hideToast()"
+            style="position:fixed; top:-180px; left:50%; transform:translateX(-50%); background:var(--glass); border:2px solid var(--gold); padding:15px 25px; border-radius:20px; z-index:5000; transition:0.6s; text-align:center; width:80%; pointer-events:auto; cursor:pointer;">
             <div style="font-size:30px;">🏆</div><b id="toast-title" style="color:var(--gold);"></b>
             <p id="toast-desc" style="font-size:12px;"></p>
+            <div style="font-size:10px; color:#888; margin-top:5px;">(클릭하여 닫기)</div>
         </div>
         <nav class="nav">
             <div id="t-timer" class="active" onclick="tab('timer')">타이머</div>
