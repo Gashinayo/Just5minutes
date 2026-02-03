@@ -1477,29 +1477,42 @@ function renderQuestUI() {
     [5, 10, 15, 20, 25].forEach(step => {
         const done = quests.weekly.claimedSteps.includes(step);
         const canClaim = !done && (weekMin >= step * 60);
-        const style = done ? 'color:#888; text-decoration:line-through' : (canClaim ? 'color:var(--gold); font-weight:bold; cursor:pointer' : 'color:#555');
+        // Use Checkboxes as requested
+        const icon = done ? '✅' : (canClaim ? '🎁' : '⬜');
+        const style = done ? 'color:#888; text-decoration:line-through' : (canClaim ? 'cursor:pointer' : 'color:#555');
         const click = canClaim ? `onclick="claimWeeklyReward(${step})"` : '';
-        wHtml += `<span style="${style}; margin-right:8px;" ${click}>[${step}h]</span>`;
+
+        wHtml += `<div style="display:flex; align-items:center; ${style}" ${click}>
+            <span style="margin-right:5px;">${icon}</span>
+            <span>${step}h</span>
+        </div>`;
     });
 
     container.innerHTML = `
+        <!-- 1. Daily Quest -->
         <div class="quest-card">
-            <div style="font-weight:bold; margin-bottom:5px;">📅 일일 퀘스트</div>
+            <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">📅 일일 퀘스트</div>
             <div style="display:flex; justify-content:space-between; font-size:13px;">
                 <span>${q1} 출석</span>
                 <span>${q2} 25분 집중</span>
                 <span onclick="tryLuckyBox()" style="cursor:${quests.daily.lucky ? 'default' : 'pointer'}">${q3} 랜덤박스</span>
             </div>
         </div>
+
+        <!-- 2. Weekly Challenge -->
         <div class="quest-card">
-            <div style="font-weight:bold; margin-bottom:5px;">📅 주간 도전 (${weekHours} / 25.0 h)</div>
-            <div style="font-size:12px;">${wHtml}</div>
+            <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">📅 주간 도전 (${weekHours} / 25.0 h)</div>
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+                ${wHtml}
+            </div>
         </div>
+
+        <!-- 3. Inventory -->
         <div class="quest-card">
-            <div style="font-weight:bold; margin-bottom:5px;">🎒 인벤토리</div>
+            <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">🎒 인벤토리</div>
             <div style="display:flex; align-items:center; justify-content:space-between;">
                 <span>🔥 피버 물약</span>
-                <button id="btn-use-fever" class="btn" style="width:auto; padding:5px 10px; font-size:11px; margin-top:0;" onclick="useFeverItem()">Loading...</button>
+                <button id="btn-use-fever" class="btn" style="width:auto; padding:5px 10px; font-size:11px; margin-top:0;" onclick="useFeverItem()">사용하기 (보유: ${quests.inventory.feverItem})</button>
             </div>
         </div>
     `;
