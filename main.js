@@ -603,6 +603,11 @@ function runEngine() {
                 saveQuests();
                 renderQuestUI(); // Update Progress Bar
 
+                // [v19.0] Pet XP (1 min = 1 XP)
+                if (typeof pet !== 'undefined') {
+                    pet.addXp(1);
+                }
+
                 // earnPoints(10); // Removed (replaced by 10s rule)
                 saveStats(); checkAchievements();
             }

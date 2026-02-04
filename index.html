@@ -285,7 +285,9 @@
                     <li><b>출석 보너스</b>: 7일 연속 접속 시 1,000P</li>
                     <li><b>가챠</b>: 500P 소모 (스킨/배경)</li>
                 </ul>
-                <button class="btn" style="width:100%; margin-top:20px;" onclick="hideModal('help-modal')">닫기</button>
+                <button class="bg-red-500 text-white px-4 py-2 rounded" onclick="resetData()">데이터 초기화 (Reset)</button>
+                <button class="bg-blue-500 text-white px-4 py-2 rounded" style="margin-top:10px;"
+                    onclick="pet.addXp(10)">[Debug] 펫 경험치 +10</button>
             </div>
         </div>
         <div id="gacha-modal" class="modal">
