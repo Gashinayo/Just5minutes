@@ -149,6 +149,8 @@ function initApp() {
         xp: 0,
         mood: 100, // 0-100
         evolutionThreshold: 60, // Minutes of focus required to hatch
+        posX: 25, // Percent or pixel value, default 25%
+        posY: 110, // Pixel value from bottom, default 110px
 
         init() {
             // Load data if exists
@@ -157,8 +159,11 @@ function initApp() {
                 this.state = saved.state;
                 this.xp = saved.xp;
                 this.mood = saved.mood;
+                if (saved.posX !== undefined) this.posX = saved.posX;
+                if (saved.posY !== undefined) this.posY = saved.posY;
             }
             this.render();
+            this.initDrag();
         },
 
         addXp(amount) {
@@ -183,6 +188,9 @@ function initApp() {
         },
 
         interact() {
+            // Prevent interaction if dragging (handled by click threshold usually, but for now simple Toast)
+            if (this.isDragging) return;
+
             if (this.state === 'egg') {
                 showToast("알", "따뜻한 온기가 느껴집니다. (남은 시간: " + Math.max(0, this.evolutionThreshold - this.xp) + "분)", "🥚");
                 return;
@@ -203,7 +211,9 @@ function initApp() {
             localStorage.setItem('pet', JSON.stringify({
                 state: this.state,
                 xp: this.xp,
-                mood: this.mood
+                mood: this.mood,
+                posX: this.posX,
+                posY: this.posY
             }));
         },
 
@@ -216,6 +226,103 @@ function initApp() {
             // if (this.state === 'adult') src = PET_ASSETS.adult; (Future)
 
             el.src = src;
+
+            // Restore Position
+            const container = document.getElementById('pet-container');
+            if (container) {
+                // If stored as percent str or num
+                if (typeof this.posX === 'string' && this.posX.includes('%')) {
+                    container.style.left = this.posX;
+                } else {
+                    container.style.left = this.posX + 'px';
+                }
+                container.style.bottom = this.posY + 'px';
+            }
+        },
+
+        // [v19.1] Drag Functionality
+        isDragging: false,
+        initDrag() {
+            const el = document.getElementById('pet-container');
+            if (!el) return;
+
+            let startX, startY, initialLeft, initialBottom;
+            let moveThreshold = 0;
+
+            const startDrag = (e) => {
+                this.isDragging = false;
+                moveThreshold = 0;
+
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                startX = clientX;
+                startY = clientY;
+
+                const rect = el.getBoundingClientRect();
+                const parentRect = el.parentElement.getBoundingClientRect();
+
+                // Calculate current left/bottom relative to parent
+                initialLeft = el.offsetLeft;
+                // Bottom is tricky with offsetTop, better to use computed style or track manually.
+                // Simpler: just track changes and apply to current style.
+                // Actually, let's switch to top/left positioning for drag, or keep bottom? 
+                // Let's stick to Left/Bottom as defined in CSS.
+                // wait, el.style.bottom might be empty if set via css class.
+                // Let's computed style.
+                const style = window.getComputedStyle(el);
+                initialBottom = parseInt(style.bottom) || 0;
+                initialLeft = parseInt(style.left) || 0;
+
+                document.addEventListener('mousemove', onDrag);
+                document.addEventListener('mouseup', endDrag);
+                document.addEventListener('touchmove', onDrag, { passive: false });
+                document.addEventListener('touchend', endDrag);
+            };
+
+            const onDrag = (e) => {
+                const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                const dx = clientX - startX;
+                const dy = clientY - startY; // Down is positive
+
+                if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                    this.isDragging = true;
+                    moveThreshold = 1; // It's a drag, not a click
+                }
+
+                // Update Style
+                // Increasing Bottom means moving Up (dy is negative)
+                let newBottom = initialBottom - dy;
+                let newLeft = initialLeft + dx;
+
+                el.style.left = `${newLeft}px`;
+                el.style.bottom = `${newBottom}px`;
+
+                // Prevent scrolling on touch
+                if (e.cancelable) e.preventDefault();
+            };
+
+            const endDrag = () => {
+                document.removeEventListener('mousemove', onDrag);
+                document.removeEventListener('mouseup', endDrag);
+                document.removeEventListener('touchmove', onDrag);
+                document.removeEventListener('touchend', endDrag);
+
+                if (this.isDragging) {
+                    // Save new position
+                    this.posX = parseInt(el.style.left);
+                    this.posY = parseInt(el.style.bottom);
+                    this.save();
+                }
+
+                // Reset flag slightly later to allow click event to detect dragging state if handled there
+                setTimeout(() => { this.isDragging = false; }, 100);
+            };
+
+            el.addEventListener('mousedown', startDrag);
+            el.addEventListener('touchstart', startDrag, { passive: false });
         }
     };
 

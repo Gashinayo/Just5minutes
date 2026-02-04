@@ -37,6 +37,52 @@
     /* Increased spacing between parent items */
 }
 
+/* [v19.0] Pixel Pet */
+#pet-container {
+    position: absolute;
+    bottom: 110px;
+    left: 25%;
+    width: 64px;
+    /* Slightly bigger than 48px for touch, but strictly constrained */
+    height: 64px;
+    z-index: 1000;
+    /* Ensure draggable element is on top */
+    cursor: grab;
+    transition: transform 0.1s;
+    /* Faster for drag feel, though we might disable it during drag */
+    touch-action: none;
+    /* Critical for touch dragging */
+    user-select: none;
+}
+
+#pet-container:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+}
+
+#pet-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    pointer-events: none;
+    /* Let clicks pass to container */
+    filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
+    animation: float-pet 3s infinite ease-in-out;
+}
+
+@keyframes float-pet {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
 /* [v17.0] Dashboard Styles */
 .stat-grid {
     display: grid;
