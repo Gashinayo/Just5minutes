@@ -115,6 +115,14 @@ function initApp() {
     };
     quests = safeParse('quests', defaultQuests);
 
+    // [v14.0] Quest Update
+    // quests.updateProgress(focusMinutes); // This line seems to be out of context here, as focusMinutes is not defined in initApp.
+
+    // [v19.0] Pet XP
+    // if (focusMinutes > 0 && typeof pet !== 'undefined') { // This line also seems out of context.
+    //     pet.addXp(focusMinutes);
+    // }
+
     // [Fix] Validation: Ensure structure exists (prevent crash if incomplete data in LS)
     if (!quests || !quests.daily || !quests.weekly || !quests.inventory) {
         console.warn("Invalid Quests Data detected. Resetting.");
@@ -134,6 +142,82 @@ function initApp() {
         stats.maxSec = old.maxFocus || 0;
         stats.consecutiveDays = old.consecutive || 0;
     }
+
+    // [v19.0] Pixel Pet System
+    const pet = {
+        state: 'egg', // egg, baby, adult
+        xp: 0,
+        mood: 100, // 0-100
+        evolutionThreshold: 60, // Minutes of focus required to hatch
+
+        init() {
+            // Load data if exists
+            const saved = JSON.parse(localStorage.getItem('pet'));
+            if (saved) {
+                this.state = saved.state;
+                this.xp = saved.xp;
+                this.mood = saved.mood;
+            }
+            this.render();
+        },
+
+        addXp(amount) {
+            if (this.state === 'adult') return;
+            this.xp += amount;
+
+            // Evolution Logic
+            if (this.state === 'egg' && this.xp >= this.evolutionThreshold) {
+                this.evolve('baby');
+            } else if (this.state === 'baby' && this.xp >= this.evolutionThreshold * 5) {
+                this.evolve('adult');
+            }
+            this.save();
+            this.render();
+        },
+
+        evolve(newState) {
+            this.state = newState;
+            this.xp = 0;
+            showToast("축하합니다!", `펫이 ${newState === 'baby' ? '부화했습니다' : '성장했습니다'}!`, "🐣");
+            playSound('level_up'); // Reuse level sound
+        },
+
+        interact() {
+            if (this.state === 'egg') {
+                showToast("알", "따뜻한 온기가 느껴집니다. (남은 시간: " + Math.max(0, this.evolutionThreshold - this.xp) + "분)", "🥚");
+                return;
+            }
+
+            // Baby/Adult Interaction
+            this.mood = Math.min(100, this.mood + 10);
+            showToast("쓰다듬기", "펫이 기분 좋아합니다! ❤️", "🥰");
+
+            // Visual Bounce
+            const el = document.getElementById('pet-img');
+            el.style.transform = "scale(1.2)";
+            setTimeout(() => el.style.transform = "scale(1)", 200);
+            this.save();
+        },
+
+        save() {
+            localStorage.setItem('pet', JSON.stringify({
+                state: this.state,
+                xp: this.xp,
+                mood: this.mood
+            }));
+        },
+
+        render() {
+            const el = document.getElementById('pet-img');
+            if (!el) return;
+
+            let src = 'pet_egg.png';
+            if (this.state === 'baby') src = 'pet_baby.png';
+            // if (this.state === 'adult') src = 'pet_adult.png'; (Future)
+
+            el.src = src;
+        }
+    };
 
     ownedAchs = safeParse('ownedAchs', []);
     current = safeParse('current', { char: 's_m_base.png', bg: 'bg_000.png', title: '', titlePos: 'top', titleColor: '#FFD700' });
