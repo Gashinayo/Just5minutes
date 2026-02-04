@@ -9,8 +9,16 @@
     <meta name="theme-color" content="#000000">
     <meta property="og:title" content="Pixel Lab v15.0">
     <meta property="og:image" content="s_m_base.png">
-    <title>Pixel Lab v15.0</title>
-    <link rel="stylesheet" href="style.css?v=15.0">
+    <title>Pixel Lab v18.0</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="style.css?v=18.0">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
 </head>
 
 <body>
