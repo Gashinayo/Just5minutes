@@ -211,9 +211,9 @@ function initApp() {
             const el = document.getElementById('pet-img');
             if (!el) return;
 
-            let src = 'pet_egg.png';
-            if (this.state === 'baby') src = 'pet_baby.png';
-            // if (this.state === 'adult') src = 'pet_adult.png'; (Future)
+            let src = PET_ASSETS.egg;
+            if (this.state === 'baby') src = PET_ASSETS.baby;
+            // if (this.state === 'adult') src = PET_ASSETS.adult; (Future)
 
             el.src = src;
         }
