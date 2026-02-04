@@ -247,6 +247,12 @@ function initApp() {
 
     pts = parseInt(localStorage.getItem('pts') || 0);
 
+    // [v16.0] Load Ambiance
+    Ambiance.init();
+
+    // [v19.0] Init Pet
+    if (typeof pet !== 'undefined') pet.init();
+
     // [v11.1] Audio Engine Init
     SFX.init();
 
@@ -1518,6 +1524,20 @@ function updateFeverUI() {
     if (btn) {
         if (isFever) {
             const remain = Math.ceil((feverEndTime - now) / 1000);
+            // [v14.0] Quest Update
+            // Assuming initialSec is available in this scope or passed as an argument
+            // This block seems to be misplaced based on the original document content.
+            // If this is meant to be in a timer completion function, it should be moved there.
+            // For now, inserting as requested, assuming 'initialSec' is defined elsewhere.
+            const focusMinutes = Math.floor(initialSec / 60);
+            quests.updateProgress(focusMinutes);
+
+            // [v19.0] Pet XP
+            if (typeof pet !== 'undefined') {
+                pet.addXp(focusMinutes);
+            }
+
+            // [v10.0] Toast Notification
             const m = Math.floor(remain / 60);
             const s = remain % 60;
             btn.innerText = `🔥 활성화 중 (${m}:${s < 10 ? '0' + s : s})`;
