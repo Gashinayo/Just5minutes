@@ -356,7 +356,7 @@ function initApp() {
     }
     saveStats();
     updateDisp();
-    renderSkins(); // [Fix] Correct function name
+    renderGrid(); // [Fix] Correct function name
     renderAchs(); // [Fix] Correct function name (was loadAchUI)
     document.getElementById('pos-' + current.titlePos).classList.add('active');
     document.getElementById('title-color-picker').value = current.titleColor;
