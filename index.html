@@ -36,7 +36,7 @@
         <nav class="nav">
             <div id="t-timer" class="active" onclick="tab('timer')">타이머</div>
             <div id="t-stats" onclick="tab('stats')">통계</div>
-            <div id="t-achs" onclick="tab('achs')">칭호</div>
+            <!-- Title merged into Style -->
             <div id="t-style" onclick="tab('style')">스타일</div>
             <div id="t-admin" onclick="tab('admin')">관리</div>
         </nav>
@@ -108,20 +108,8 @@
             </div>
         </div>
         <div id="p-achs" class="tab-content">
-            <div class="config-panel">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <span>칭호 위치</span>
-                    <div style="display:flex; gap:4px;"><button class="pos-btn" id="pos-top"
-                            onclick="setTitlePos('top')">상단</button><button class="pos-btn" id="pos-bottom"
-                            onclick="setTitlePos('bottom')">하단</button><button class="pos-btn" id="pos-none"
-                            onclick="setTitlePos('none')">숨김</button></div>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>칭호 색상</span><input type="color" id="title-color-picker" oninput="setTitleColor(this.value)"
-                        style="border:none; width:45px; height:26px; background:none; cursor:pointer;">
-                </div>
-            </div>
-            <div class="ach-grid" id="ach-container"></div>
+            <!-- Title Tab Merged into Style -->
+            <div style="padding:20px; text-align:center;">이동되었습니다. [스타일 > 칭호]</div>
         </div>
         <div id="p-style" class="tab-content">
             <div class="sub-tab-area" style="overflow-x:auto; white-space:nowrap; padding:10px;">
@@ -154,6 +142,21 @@
                 <div class="pet-slot" onclick="selectSlot(2)">
                     <div style="font-size:10px; margin-bottom:5px;">Slot 3</div>
                     <img id="slot-img-2" src="" style="width:30px; height:30px; object-fit:contain; opacity:0.5;">
+                </div>
+            </div>
+
+            <!-- [v11.1] Title Controls (Visible only in Title SubTab) -->
+            <div id="title-controls" class="config-panel" style="display:none; margin:10px 20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <span>칭호 위치</span>
+                    <div style="display:flex; gap:4px;"><button class="pos-btn" id="pos-top"
+                            onclick="setTitlePos('top')">상단</button><button class="pos-btn" id="pos-bottom"
+                            onclick="setTitlePos('bottom')">하단</button><button class="pos-btn" id="pos-none"
+                            onclick="setTitlePos('none')">숨김</button></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>칭호 색상</span><input type="color" id="title-color-picker" oninput="setTitleColor(this.value)"
+                        style="border:none; width:45px; height:26px; background:none; cursor:pointer;">
                 </div>
             </div>
 
