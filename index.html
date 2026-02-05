@@ -37,7 +37,7 @@
             <div id="t-timer" class="active" onclick="tab('timer')">타이머</div>
             <div id="t-stats" onclick="tab('stats')">통계</div>
             <div id="t-achs" onclick="tab('achs')">칭호</div>
-            <div id="t-skin" onclick="tab('skin')">스킨</div>
+            <div id="t-style" onclick="tab('style')">스타일</div>
             <div id="t-admin" onclick="tab('admin')">관리</div>
         </nav>
         <div id="p-timer" class="tab-content active">
@@ -123,27 +123,45 @@
             </div>
             <div class="ach-grid" id="ach-container"></div>
         </div>
-        <div id="p-skin" class="tab-content">
-            <div class="sub-tab-area">
-                <div>
-                    <span id="sm-char" class="sub-tab-btn active" onclick="skinSub('char')">캐릭터</span>
-                    <span id="sm-bg" class="sub-tab-btn" style="margin-left:20px;" onclick="skinSub('bg')">배경</span>
+        <div id="p-style" class="tab-content">
+            <div class="sub-tab-area" style="overflow-x:auto; white-space:nowrap; padding:10px;">
+                <div style="display:flex; gap:15px;">
+                    <span id="sm-char" class="sub-tab-btn active" onclick="styleSub('char')">캐릭터</span>
+                    <span id="sm-bg" class="sub-tab-btn" onclick="styleSub('bg')">배경</span>
+                    <span id="sm-title" class="sub-tab-btn" onclick="styleSub('title')">칭호</span>
+                    <span id="sm-pet" class="sub-tab-btn" onclick="styleSub('pet')">펫</span>
                 </div>
                 <div style="display:flex; align-items:center;">
-                    <button onclick="showModal('help-modal')"
-                        style="background:none; border:1px solid #555; color:#aaa; border-radius:50%; width:20px; height:20px; font-size:12px; margin-right:8px; cursor:pointer;">?</button>
                     <div style="text-align:right;">
                         <div style="color:var(--gold); font-weight:bold;"><span id="ui-pts">0</span> P</div>
-                        <div style="font-size:11px; color:#888; margin-top:2px;">Today: <span
-                                id="skin-daily-pts">0</span> /
-                            3000</div>
                     </div>
                 </div>
             </div>
+
+            <!-- [v11.0] Pet Slots (Visible only in Pet SubTab) -->
+            <div id="pet-slots-area" style="display:none; padding:10px; gap:10px; justify-content:center;">
+                <!-- Slot 1 (Leader) -->
+                <div class="pet-slot" onclick="selectSlot(0)" style="border:2px solid var(--gold);">
+                    <div style="font-size:10px; margin-bottom:5px;">Leader</div>
+                    <img id="slot-img-0" src="pet_egg.png" style="width:40px; height:40px; object-fit:contain;">
+                </div>
+                <!-- Slot 2 -->
+                <div class="pet-slot" onclick="selectSlot(1)">
+                    <div style="font-size:10px; margin-bottom:5px;">Slot 2</div>
+                    <img id="slot-img-1" src="" style="width:30px; height:30px; object-fit:contain; opacity:0.5;">
+                </div>
+                <!-- Slot 3 -->
+                <div class="pet-slot" onclick="selectSlot(2)">
+                    <div style="font-size:10px; margin-bottom:5px;">Slot 3</div>
+                    <img id="slot-img-2" src="" style="width:30px; height:30px; object-fit:contain; opacity:0.5;">
+                </div>
+            </div>
+
             <button id="gacha-btn" onclick="startGacha()"
                 style="width:90%; margin:15px auto; background:linear-gradient(45deg, var(--gold), #FFA500); padding:12px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; color:#000; position:relative; z-index:100;">🎁
                 랜덤 뽑기 (500P)</button>
-            <div id="skin-list" class="skin-grid"></div>
+
+            <div id="style-list" class="skin-grid"></div>
         </div>
         <div id="p-admin" class="tab-content">
             <div style="padding:20px;">

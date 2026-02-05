@@ -448,19 +448,78 @@ function updateAestheticUI() {
     } else { tag.style.display = 'none'; }
     document.querySelectorAll('.pos-btn').forEach(b => b.classList.toggle('active', b.id === 'pos-' + current.titlePos));
 }
-function skinSub(s) { subTab = s; document.getElementById('sm-char').classList.toggle('active', s === 'char'); document.getElementById('sm-bg').classList.toggle('active', s === 'bg'); renderSkins(); }
-function renderSkins() {
-    const list = document.getElementById('skin-list');
-    list.innerHTML = owned[subTab].map(item => `
-        <div class="skin-item ${current[subTab] === item ? 'selected' : ''}" onclick="applySkin('${item}')">
-            <img src="${item}">
-        </div>`).join('');
+// [v11.0] Style Tab System (Unified)
+function styleSub(t) {
+    subTab = t;
+    // UI Active State
+    document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('sm-' + t).classList.add('active');
+
+    // Visibility Toggle
+    const gachaBtn = document.getElementById('gacha-btn');
+    const petSlots = document.getElementById('pet-slots-area');
+
+    if (t === 'pet') {
+        gachaBtn.style.display = 'none';
+        petSlots.style.display = 'flex';
+        renderPetSlots();
+    } else if (t === 'title') {
+        gachaBtn.style.display = 'none';
+        petSlots.style.display = 'none';
+    } else {
+        gachaBtn.style.display = 'block'; // Char / BG
+        petSlots.style.display = 'none';
+    }
+
+    renderGrid();
 }
-function applySkin(i) {
-    current[subTab] = i; unlockDirect(21);
-    // 깔맞춤 (동시 변경을 감지하긴 어려우므로 최근 변경 시간 등으로... 혹은 단순히 둘 다 변경 이력이 있으면 인정? 여기선 단순 트리거로)
-    if (stats.totalClicks > 10) unlockDirect(28); // 대략적인 조건으로 완화
-    saveCurrent(); updateAestheticUI(); renderSkins();
+
+function renderGrid() {
+    const container = document.getElementById('style-list');
+    container.innerHTML = '';
+
+    if (subTab === 'title') {
+        // [Title Logic] - Reuse Achievement Grid Logic but for Title Selection?
+        // Currently Titles are bound to Achievements.
+        // Let's show specific Title UI or just guide users to Achievement Tab
+        container.innerHTML = '<div style="color:#888; text-align:center; padding:20px;">칭호는 [칭호] 탭에서<br>업적을 달성하여 획득하세요.</div>';
+        return;
+    }
+
+    if (subTab === 'pet') {
+        // [Pet Inventory Logic]
+        const pets = ['egg']; // Currently only egg is available 
+        // In future, ownedPets array
+        container.innerHTML = pets.map(p => `
+            <div class="skin-item" onclick="alert('준비 중')">
+                <img src="pet_${p}.png" style="width:50%; height:50%;">
+            </div>
+         `).join('');
+        return;
+    }
+
+    // Char / BG Logic (Existing)
+    const list = owned[subTab] || [];
+    container.innerHTML = list.map(item => {
+        const isSelected = (subTab === 'char' ? current.char : current.bg) === item;
+        return `
+        <div class="skin-item ${isSelected ? 'selected' : ''}" onclick="applySkin('${item}')">
+            <img src="${item}">
+        </div>`;
+    }).join('');
+}
+
+function renderPetSlots() {
+    // Placeholder for Slot rendering
+    // Will read from stats.petSlots later
+}
+
+function applySkin(item) {
+    if (subTab === 'char') current.char = item;
+    if (subTab === 'bg') current.bg = item;
+    localStorage.setItem('current', JSON.stringify(current));
+    updateAestheticUI(); renderGrid();
+    SFX.play('click');
 }
 function start() {
     const now = new Date();
@@ -646,8 +705,9 @@ function cheat(type) {
 function tab(t) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.querySelectorAll('.nav div').forEach(d => d.classList.remove('active'));
     document.getElementById('p-' + t).classList.add('active'); document.getElementById('t-' + t).classList.add('active');
-    document.getElementById('char-container').style.display = (t === 'timer' || t === 'skin' ? 'flex' : 'none');
-    if (t === 'skin') renderSkins(); if (t === 'achs') renderAchs();
+    document.getElementById('char-container').style.display = (t === 'timer' || t === 'style' ? 'flex' : 'none');
+    if (t === 'style') styleSub(subTab || 'char');
+    if (t === 'achs') renderAchs();
     if (t === 'stats') renderDashboard(); // [v17.0] Render Dashboard
     updateStatsUI();
 }
