@@ -236,6 +236,7 @@ function initApp() {
             this.save();
             this.render();
             renderPetSlots();
+            updateActiveSkillsUI(); // Update skill display
             showToast('장착 완료', `${petType.toUpperCase()}을(를) 슬롯 ${slotIndex + 1}에 장착했습니다!`, '✅');
         },
 
@@ -397,6 +398,7 @@ function initApp() {
         }
     };
     petSystem.init(); // Initialize pet system
+    updateActiveSkillsUI(); // Show active skills
     ownedAchs = safeParse('ownedAchs', []);
     current = safeParse('current', { char: 's_m_base.png', bg: 'bg_000.png', title: '', titlePos: 'top', titleColor: '#FFD700' });
     // [v17.2] Restore UI Color (Moved to after current is defined)
@@ -791,6 +793,32 @@ function openPetShop() {
     SFX.play('success');
     renderGrid();
     updateStatsUI();
+}
+
+// [Pet Skills UI] Update active skills display in timer tab
+function updateActiveSkillsUI() {
+    const display = document.getElementById('active-skills-display');
+    const skillsList = document.getElementById('skills-list');
+
+    if (!display || !skillsList) return;
+
+    const activePets = getActivePets();
+
+    if (activePets.length === 0) {
+        display.style.display = 'none';
+        return;
+    }
+
+    display.style.display = 'block';
+
+    const skillDescriptions = {
+        dog: '🐶 강아지: 포인트 +5%',
+        cat: '🐱 고양이: 피버 +10분',
+        turtle: '🐢 거북이: 일일 한도 +500P'
+    };
+
+    const skills = activePets.map(pet => skillDescriptions[pet] || '').filter(s => s);
+    skillsList.innerHTML = skills.join('<br>');
 }
 
 function start() {
