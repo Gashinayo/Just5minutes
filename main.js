@@ -656,7 +656,7 @@ function startGacha() {
             document.getElementById('res-img').src = res;
         }
         document.getElementById('gacha-result-view').style.display = 'block';
-        checkAchievements(); renderSkins();
+        checkAchievements(); renderGrid();
     }, 2500);
 }
 // [v10.2] Non-blocking Toast (Updated v16.2 for Custom Icons)
