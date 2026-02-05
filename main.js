@@ -657,6 +657,69 @@ function showPetEquipModal(petType) {
     }
 }
 
+// [Pet Skills] Helper Functions
+function getActivePets() {
+    if (!petSystem || !petSystem.slots) return [];
+    return petSystem.slots
+        .filter(slot => slot && slot.type)
+        .map(slot => slot.type);
+}
+
+function getPetPointsMultiplier() {
+    const pets = getActivePets();
+    let multiplier = 1.0;
+    if (pets.includes('dog')) multiplier += 0.05; // Dog: +5%
+    return multiplier;
+}
+
+function getPetFeverBonus() {
+    const pets = getActivePets();
+    let bonusMinutes = 0;
+    if (pets.includes('cat')) bonusMinutes += 10; // Cat: +10 minutes
+    return bonusMinutes * 60 * 1000; // Convert to milliseconds
+}
+
+function getPetDailyLimitBonus() {
+    const pets = getActivePets();
+    let bonus = 0;
+    if (pets.includes('turtle')) bonus += 500; // Turtle: +500P
+    return bonus;
+}
+
+// [Economy] Points Earning with Pet Bonuses
+function earnPoints(baseAmount, skipDailyCheck = false, skipToast = false) {
+    // Apply Dog's +5% bonus
+    const multiplier = getPetPointsMultiplier();
+    let amount = Math.floor(baseAmount * multiplier);
+
+    // Check daily limit (3000P base + Turtle bonus)
+    const dailyLimit = 3000 + getPetDailyLimitBonus();
+
+    if (!skipDailyCheck && stats.dailyEarned >= dailyLimit) {
+        if (!skipToast) showToast('일일 한도 도달', `오늘은 더 이상 포인트를 획득할 수 없습니다. (${dailyLimit}P)`, '⚠️');
+        return 0;
+    }
+
+    // Apply daily limit cap
+    if (!skipDailyCheck) {
+        const remaining = dailyLimit - stats.dailyEarned;
+        if (amount > remaining) {
+            amount = remaining;
+            if (!skipToast) showToast('일일 한도 근접', `한도까지 ${amount}P만 획득했습니다.`, '⚠️');
+        }
+        stats.dailyEarned += amount;
+    }
+
+    // Add points
+    pts += amount;
+    sessionEarned += amount;
+
+    // Save and update UI
+    localStorage.setItem('pts', pts);
+    saveStats();
+
+    return amount;
+}
 
 function applySkin(item) {
     if (subTab === 'char') current.char = item;
