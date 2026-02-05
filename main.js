@@ -357,7 +357,7 @@ function initApp() {
     saveStats();
     updateDisp();
     renderGrid(); // [Fix] Correct function name
-    renderAchs(); // [Fix] Correct function name (was loadAchUI)
+    renderGrid(); // [Fix] Correct function name (was loadAchUI)
     document.getElementById('pos-' + current.titlePos).classList.add('active');
     document.getElementById('title-color-picker').value = current.titleColor;
     // [v14.0] Setup Drag Events
