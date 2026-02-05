@@ -90,7 +90,7 @@ let startupTime = Date.now(), lastStopTime = 0, clickSession = 0;
 // [v10.3] Session Earnings
 let sessionEarned = 0;
 // [v19.0] Pixel Pet System (Global)
-let pet;
+let petSystem;
 function initApp() {
     console.log("Initializing App...");
     // [v10.4 Safe Load] Use safeParse
@@ -130,67 +130,152 @@ function initApp() {
         stats.maxSec = old.maxFocus || 0;
         stats.consecutiveDays = old.consecutive || 0;
     }
-    // [v19.0] Pixel Pet System
-    pet = {
-        state: 'egg', // egg, baby, adult
-        xp: 0,
-        mood: 100, // 0-100
-        evolutionThreshold: 60, // Minutes of focus required to hatch
-        posX: 25, // Percent or pixel value, default 25%
-        posY: 110, // Pixel value from bottom, default 110px
+    // [v19.0] Pixel Pet System - Multi-Pet Architecture
+    petSystem = {
+        owned: ['dog'], // Pet types user owns (dog, cat, turtle)
+        slots: [ // 3 slots: Leader + 2 Followers
+            { type: 'dog', stage: 'egg', xp: 0, displayStage: 'egg' },
+            { type: null, stage: null, xp: 0, displayStage: null },
+            { type: null, stage: null, xp: 0, displayStage: null }
+        ],
+        activeSlot: 0, // Which slot's pet is displayed on screen
+        displayPos: { x: 25, y: 110 }, // Screen position
+
         init() {
-            // Load data if exists
-            const saved = JSON.parse(localStorage.getItem('pet'));
+            // Migration: Load old single-pet data if exists
+            const oldPet = JSON.parse(localStorage.getItem('pet'));
+            const saved = JSON.parse(localStorage.getItem('petSystem'));
+
             if (saved) {
-                this.state = saved.state;
-                this.xp = saved.xp;
-                this.mood = saved.mood;
-                if (saved.posX !== undefined) this.posX = saved.posX;
-                if (saved.posY !== undefined) this.posY = saved.posY;
+                this.owned = saved.owned || ['dog'];
+                this.slots = saved.slots || this.slots;
+                this.activeSlot = saved.activeSlot || 0;
+                this.displayPos = saved.displayPos || this.displayPos;
+            } else if (oldPet) {
+                // Migrate old pet to new system
+                this.slots[0] = {
+                    type: 'dog',
+                    stage: oldPet.state || 'egg',
+                    xp: oldPet.xp || 0,
+                    displayStage: oldPet.state || 'egg'
+                };
+                this.displayPos = { x: oldPet.posX || 25, y: oldPet.posY || 110 };
+                this.save();
+                localStorage.removeItem('pet'); // Clean up old data
             }
+
             this.render();
             this.initDrag();
         },
-        addXp(amount) {
-            if (this.state === 'adult') return;
-            this.xp += amount;
-            // Evolution Logic
-            if (this.state === 'egg' && this.xp >= this.evolutionThreshold) {
-                this.evolve('baby');
-            } else if (this.state === 'baby' && this.xp >= this.evolutionThreshold * 5) {
-                this.evolve('adult');
-            }
+
+        addXp(minutes) {
+            // Add XP to all equipped pets
+            this.slots.forEach((slot, idx) => {
+                if (!slot.type) return;
+
+                const maxStage = this.getMaxStage(slot.type);
+                if (slot.stage === 'adult') return; // Already max
+
+                slot.xp += minutes;
+
+                // Evolution thresholds: 60min -> baby, 240min -> adult
+                if (slot.stage === 'egg' && slot.xp >= 60) {
+                    this.evolve(idx, 'baby');
+                } else if (slot.stage === 'baby' && slot.xp >= 240) {
+                    this.evolve(idx, 'adult');
+                }
+            });
+
             this.save();
             this.render();
         },
-        evolve(newState) {
-            this.state = newState;
-            this.xp = 0;
-            showToast("축하합니다!", `펫이 ${newState === 'baby' ? '부화했습니다' : '성장했습니다'}!`, "🐣");
-            playSound('level_up'); // Reuse level sound
+
+        evolve(slotIndex, newStage) {
+            const slot = this.slots[slotIndex];
+            if (!slot.type) return;
+
+            slot.stage = newStage;
+            slot.displayStage = newStage; // Auto-update display to new stage
+
+            const stageName = newStage === 'baby' ? '부화' : '성장';
+            const emoji = newStage === 'baby' ? '🐣' : '✨';
+            showToast(`${slot.type.toUpperCase()} ${stageName}!`, `펫이 ${stageName}했습니다!`, emoji);
+            SFX.play('success');
+
+            this.save();
         },
+
+        getMaxStage(petType) {
+            // Returns the highest stage unlocked for this pet type
+            let maxStage = 'egg';
+            this.slots.forEach(slot => {
+                if (slot.type === petType) {
+                    if (slot.stage === 'adult') maxStage = 'adult';
+                    else if (slot.stage === 'baby' && maxStage === 'egg') maxStage = 'baby';
+                }
+            });
+            return maxStage;
+        },
+
+        equipPet(petType, slotIndex) {
+            if (!this.owned.includes(petType)) {
+                showToast('오류', '보유하지 않은 펫입니다.', '❌');
+                return;
+            }
+
+            const maxStage = this.getMaxStage(petType);
+
+            this.slots[slotIndex] = {
+                type: petType,
+                stage: maxStage === 'egg' ? 'egg' : maxStage, // Start at max unlocked stage
+                xp: 0,
+                displayStage: maxStage === 'egg' ? 'egg' : maxStage
+            };
+
+            this.activeSlot = slotIndex;
+            this.save();
+            this.render();
+            renderPetSlots();
+            showToast('장착 완료', `${petType.toUpperCase()}을(를) 슬롯 ${slotIndex + 1}에 장착했습니다!`, '✅');
+        },
+
+        setDisplayStage(slotIndex, displayStage) {
+            // Cosmetic: Change visual appearance without affecting stats
+            const slot = this.slots[slotIndex];
+            if (!slot.type) return;
+
+            const maxStage = this.getMaxStage(slot.type);
+            const stages = ['egg', 'baby', 'adult'];
+            const maxIndex = stages.indexOf(maxStage);
+            const requestIndex = stages.indexOf(displayStage);
+
+            if (requestIndex <= maxIndex) {
+                slot.displayStage = displayStage;
+                this.save();
+                this.render();
+                showToast('외형 변경', `${displayStage} 스킨으로 변경되었습니다.`, '🎨');
+            }
+        },
+
         interact() {
             if (this.isDragging) return;
 
-            // Emoji Bubble Logic
             const emojis = ['❤️', '🎵', '⚡', '💎', '🍎', '💤', '✨', '🐾'];
             const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
             this.showBubble(randomEmoji);
-            this.mood = Math.min(100, this.mood + 10);
 
-            // Visual Bounce
             const el = document.getElementById('pet-img');
-            el.style.transform = "scale(1.2)";
-            setTimeout(() => el.style.transform = "scale(1)", 200);
-            this.save();
+            if (el) {
+                el.style.transform = "scale(1.2)";
+                setTimeout(() => el.style.transform = "scale(1)", 200);
+            }
         },
 
         showBubble(text) {
             const container = document.getElementById('pet-container');
             if (!container) return;
 
-            // Remove existing bubble
             const old = container.querySelector('.pet-bubble');
             if (old) old.remove();
 
@@ -199,37 +284,48 @@ function initApp() {
             bubble.innerText = text;
             container.appendChild(bubble);
 
-            // Auto hide
-            setTimeout(() => {
-                bubble.remove();
-            }, 2000);
+            setTimeout(() => bubble.remove(), 2000);
         },
+
         save() {
-            localStorage.setItem('pet', JSON.stringify({
-                state: this.state,
-                xp: this.xp,
-                mood: this.mood,
-                posX: this.posX,
-                posY: this.posY
+            localStorage.setItem('petSystem', JSON.stringify({
+                owned: this.owned,
+                slots: this.slots,
+                activeSlot: this.activeSlot,
+                displayPos: this.displayPos
             }));
         },
+
         render() {
             const el = document.getElementById('pet-img');
             if (!el) return;
-            let src = PET_ASSETS.egg;
-            if (this.state === 'baby') src = PET_ASSETS.baby;
-            // if (this.state === 'adult') src = PET_ASSETS.adult; (Future)
+
+            const activeSlot = this.slots[this.activeSlot];
+            if (!activeSlot || !activeSlot.type) {
+                el.style.display = 'none';
+                return;
+            }
+
+            el.style.display = 'block';
+
+            // Get image source based on type and display stage
+            const { type, displayStage } = activeSlot;
+            let src = `pet_egg_${type}.png`; // Default to egg
+
+            if (displayStage === 'baby') {
+                src = `pet_${type}_baby.png`;
+            } else if (displayStage === 'adult') {
+                src = `pet_${type}_adult.png`;
+            }
+
             el.src = src;
-            // Restore Position
+            el.onerror = () => { el.src = 'pet_egg.png'; }; // Fallback
+
+            // Restore position
             const container = document.getElementById('pet-container');
             if (container) {
-                // If stored as percent str or num
-                if (typeof this.posX === 'string' && this.posX.includes('%')) {
-                    container.style.left = this.posX;
-                } else {
-                    container.style.left = this.posX + 'px';
-                }
-                container.style.bottom = this.posY + 'px';
+                container.style.left = this.displayPos.x + (typeof this.displayPos.x === 'number' ? 'px' : '');
+                container.style.bottom = this.displayPos.y + 'px';
             }
         },
         // [v19.1] Drag Functionality
@@ -289,8 +385,8 @@ function initApp() {
                 document.removeEventListener('touchend', endDrag);
                 if (this.isDragging) {
                     // Save new position
-                    this.posX = parseInt(el.style.left);
-                    this.posY = parseInt(el.style.bottom);
+                    this.displayPos.x = parseInt(el.style.left);
+                    this.displayPos.y = parseInt(el.style.bottom);
                     this.save();
                 }
                 // Reset flag slightly later to allow click event to detect dragging state if handled there
@@ -300,6 +396,7 @@ function initApp() {
             el.addEventListener('touchstart', startDrag, { passive: false });
         }
     };
+    petSystem.init(); // Initialize pet system
     ownedAchs = safeParse('ownedAchs', []);
     current = safeParse('current', { char: 's_m_base.png', bg: 'bg_000.png', title: '', titlePos: 'top', titleColor: '#FFD700' });
     // [v17.2] Restore UI Color (Moved to after current is defined)
@@ -498,14 +595,20 @@ function renderGrid() {
     }
 
     if (subTab === 'pet') {
-        // [Pet Inventory Logic]
-        const pets = ['egg']; // Currently only egg is available 
-        // In future, ownedPets array
-        container.innerHTML = pets.map(p => `
-            <div class="skin-item" onclick="alert('준비 중')">
-                <img src="pet_${p}.png" style="width:50%; height:50%;">
+        // [Pet Inventory Logic] - Show owned pets
+        const pets = petSystem.owned; // ['dog', 'cat', 'turtle']
+
+        container.innerHTML = pets.map(petType => {
+            const maxStage = petSystem.getMaxStage(petType);
+            const stageIcon = maxStage === 'adult' ? '✨' : maxStage === 'baby' ? '🐣' : '🥚';
+
+            return `
+            <div class="skin-item" onclick="showPetEquipModal('${petType}')" style="cursor:pointer;">
+                <div style="font-size:10px; margin-bottom:5px;">${petType.toUpperCase()} ${stageIcon}</div>
+                <img src="pet_egg_${petType}.png" onerror="this.src='pet_egg.png'" style="width:50%; height:50%;">
             </div>
-         `).join('');
+            `;
+        }).join('');
         return;
     }
 
@@ -521,9 +624,39 @@ function renderGrid() {
 }
 
 function renderPetSlots() {
-    // Placeholder for Slot rendering
-    // Will read from stats.petSlots later
+    // Render the 3 pet slots UI
+    for (let i = 0; i < 3; i++) {
+        const slot = petSystem.slots[i];
+        const img = document.getElementById(`slot-img-${i}`);
+        if (!img) continue;
+
+        if (slot && slot.type) {
+            const { type, displayStage } = slot;
+            let src = `pet_egg_${type}.png`;
+            if (displayStage === 'baby') src = `pet_${type}_baby.png`;
+            else if (displayStage === 'adult') src = `pet_${type}_adult.png`;
+
+            img.src = src;
+            img.style.opacity = '1';
+            img.onerror = () => { img.src = 'pet_egg.png'; };
+        } else {
+            img.src = '';
+            img.style.opacity = '0.5';
+        }
+    }
 }
+
+function showPetEquipModal(petType) {
+    // Simple prompt for slot selection
+    const slotNames = ['Leader (Slot 1)', 'Follower (Slot 2)', 'Follower (Slot 3)'];
+    const choice = prompt(`${petType.toUpperCase()}을(를) 어느 슬롯에 장착하시겠습니까?\n\n1: ${slotNames[0]}\n2: ${slotNames[1]}\n3: ${slotNames[2]}\n\n숫자를 입력하세요 (1-3):`);
+
+    if (choice && ['1', '2', '3'].includes(choice)) {
+        const slotIndex = parseInt(choice) - 1;
+        petSystem.equipPet(petType, slotIndex);
+    }
+}
+
 
 function applySkin(item) {
     if (subTab === 'char') current.char = item;
