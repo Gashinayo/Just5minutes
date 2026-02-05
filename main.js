@@ -728,6 +728,71 @@ function applySkin(item) {
     updateAestheticUI(); renderGrid();
     SFX.play('click');
 }
+
+// [Pet Shop] Purchase pets with points
+function openPetShop() {
+    const petPrices = {
+        cat: 2000,
+        turtle: 3000
+    };
+
+    const petNames = {
+        cat: '고양이',
+        turtle: '거북이'
+    };
+
+    const petEmojis = {
+        cat: '🐱',
+        turtle: '🐢'
+    };
+
+    // Build shop menu
+    let menu = '🏪 펫 상점\n\n보유 포인트: ' + pts + 'P\n\n';
+
+    const availablePets = [];
+    for (const [petType, price] of Object.entries(petPrices)) {
+        if (!petSystem.owned.includes(petType)) {
+            availablePets.push(petType);
+            menu += `${petEmojis[petType]} ${petNames[petType]} - ${price}P\n`;
+        }
+    }
+
+    if (availablePets.length === 0) {
+        showToast('펫 상점', '모든 펫을 보유하고 있습니다!', '✅');
+        return;
+    }
+
+    menu += '\n구매할 펫을 선택하세요:';
+    availablePets.forEach((pet, idx) => {
+        menu += `\n${idx + 1}. ${petNames[pet]}`;
+    });
+
+    const choice = prompt(menu + '\n\n숫자를 입력하세요:');
+
+    if (!choice || !['1', '2'].includes(choice)) return;
+
+    const selectedPet = availablePets[parseInt(choice) - 1];
+    if (!selectedPet) return;
+
+    const price = petPrices[selectedPet];
+
+    if (pts < price) {
+        showToast('포인트 부족', `${petNames[selectedPet]}을(를) 구매하려면 ${price}P가 필요합니다.`, '❌');
+        return;
+    }
+
+    // Purchase
+    pts -= price;
+    localStorage.setItem('pts', pts);
+    petSystem.owned.push(selectedPet);
+    petSystem.save();
+
+    showToast('구매 완료!', `${petEmojis[selectedPet]} ${petNames[selectedPet]}을(를) 획득했습니다!`, '🎉');
+    SFX.play('success');
+    renderGrid();
+    updateStatsUI();
+}
+
 function start() {
     const now = new Date();
     const h = now.getHours();
@@ -820,6 +885,47 @@ function runEngine() {
 function startGacha() {
     // 1. Point Check
     if (pts < 500) return alert('포인트가 부족합니다! (500P 필요)');
+
+    // [Pet Gacha] Check for pet drops first (before skin/bg)
+    const rand = Math.random() * 100;
+    let petDrop = null;
+
+    if (rand < 3 && !petSystem.owned.includes('turtle')) {
+        // 3% Turtle (rarest)
+        petDrop = 'turtle';
+    } else if (rand < 8 && !petSystem.owned.includes('cat')) {
+        // 5% Cat (3% + 5% = 8% cumulative)
+        petDrop = 'cat';
+    }
+
+    if (petDrop) {
+        // Pet drop! Skip skin/bg gacha
+        pts -= 500;
+        stats.totalSpent += 500;
+        petSystem.owned.push(petDrop);
+        petSystem.save();
+        saveStats();
+        updateStatsUI();
+
+        const petNames = { cat: '고양이', turtle: '거북이' };
+        const petEmojis = { cat: '🐱', turtle: '🐢' };
+
+        showModal('gacha-modal');
+        document.getElementById('gacha-waiting').style.display = 'block';
+        document.getElementById('gacha-result-view').style.display = 'none';
+
+        setTimeout(() => {
+            document.getElementById('gacha-waiting').style.display = 'none';
+            document.getElementById('res-name').innerText = `${petEmojis[petDrop]} ${petNames[petDrop]} (NEW PET!)`;
+            document.getElementById('res-img').src = `pet_egg_${petDrop}.png`;
+            document.getElementById('gacha-result-view').style.display = 'block';
+            SFX.play('success');
+            showToast('🎉 펫 획득!', `${petEmojis[petDrop]} ${petNames[petDrop]}을(를) 획득했습니다!`, '🎊');
+            renderGrid();
+        }, 2500);
+        return;
+    }
+
     // [2024-01-29] Base items excluded from pool
     const baseItems = ['s_m_base.png', 's_f_base.png', 'bg_000.png', 'bg_001.png'];
     let pool = VALID[subTab].filter(i => !baseItems.includes(i));
