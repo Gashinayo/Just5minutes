@@ -1783,8 +1783,8 @@ function warpTime(seconds) {
         // Let's just point to render function
     }
     // 3. Pet XP
-    if (typeof pet !== 'undefined' && pet) {
-        pet.addXp(minutes);
+    if (typeof petSystem !== 'undefined' && petSystem) {
+        petSystem.addXp(minutes);
     }
     // 4. Points (10P per min)
     earnPoints(minutes * 10, true, true);
