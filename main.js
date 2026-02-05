@@ -426,14 +426,14 @@ document.addEventListener('click', () => {
     saveStats(); checkAchievements();
     resetIdleTimer();
 });
-function setTitlePos(pos) { current.titlePos = pos; saveCurrent(); updateAestheticUI(); renderAchs(); }
+function setTitlePos(pos) { current.titlePos = pos; saveCurrent(); updateAestheticUI(); renderGrid(); }
 function setTitleColor(color) { current.titleColor = color; saveCurrent(); updateAestheticUI(); }
 function handleAchClick(id) {
     if (ownedAchs.includes(Number(id))) equipTitle(id);
     else alert(`🔒 [해금 힌트]
 ${achDefs[id].d}`);
 }
-function equipTitle(id) { current.title = achDefs[id].t; saveCurrent(); updateAestheticUI(); renderAchs(); }
+function equipTitle(id) { current.title = achDefs[id].t; saveCurrent(); updateAestheticUI(); renderGrid(); }
 function saveCurrent() { localStorage.setItem('current', JSON.stringify(current)); }
 function updateAestheticUI() {
     document.getElementById('app').style.backgroundImage = `url('${current.bg}')`;
@@ -479,10 +479,21 @@ function renderGrid() {
     container.innerHTML = '';
 
     if (subTab === 'title') {
-        // [Title Logic] - Reuse Achievement Grid Logic but for Title Selection?
-        // Currently Titles are bound to Achievements.
-        // Let's show specific Title UI or just guide users to Achievement Tab
-        container.innerHTML = '<div style="color:#888; text-align:center; padding:20px;">칭호는 [칭호] 탭에서<br>업적을 달성하여 획득하세요.</div>';
+        // [Title Logic] - Integrated from Achievement System
+        container.innerHTML = Object.keys(achDefs).map(i => {
+            const isUnlocked = ownedAchs.includes(Number(i));
+            const isEquipped = current.title === achDefs[i]?.t;
+            return `
+            <div class="ach-item ${isUnlocked ? 'unlocked' : ''} ${isEquipped ? 'equipped' : ''}" onclick="handleAchClick(${i})">
+                ${isUnlocked ? `
+                    <b>${achDefs[i]?.t}</b>
+                    <span style="font-size:9px; color:#aaa;">${achDefs[i]?.d}</span>
+                ` : `
+                    <div style="font-size:20px; opacity:0.5;">🔒</div>
+                    <span style="font-size:9px; color:#555;">잠긴 칭호</span>
+                `}
+            </div>`;
+        }).join('');
         return;
     }
 
@@ -707,26 +718,10 @@ function tab(t) {
     document.getElementById('p-' + t).classList.add('active'); document.getElementById('t-' + t).classList.add('active');
     document.getElementById('char-container').style.display = (t === 'timer' || t === 'style' ? 'flex' : 'none');
     if (t === 'style') styleSub(subTab || 'char');
-    if (t === 'achs') renderAchs();
     if (t === 'stats') renderDashboard(); // [v17.0] Render Dashboard
     updateStatsUI();
 }
-function renderAchs() {
-    document.getElementById('ach-container').innerHTML = Object.keys(achDefs).map(i => {
-        const isUnlocked = ownedAchs.includes(Number(i));
-        const isEquipped = current.title === achDefs[i]?.t;
-        return `
-        <div class="ach-item ${isUnlocked ? 'unlocked' : ''} ${isEquipped ? 'equipped' : ''}" onclick="handleAchClick(${i})">
-            ${isUnlocked ? `
-                <b>${achDefs[i]?.t}</b>
-                <span style="font-size:9px; color:#aaa;">${achDefs[i]?.d}</span>
-            ` : `
-                <div style="font-size:20px; opacity:0.5;">🔒</div>
-                <span style="font-size:9px; color:#555;">잠긴 칭호</span>
-            `}
-        </div>`;
-    }).join('');
-}
+
 function updateDisp() { const d = isDeepWork ? deepWorkSec : sec; document.getElementById('time').innerText = `${Math.floor(d / 60).toString().padStart(2, '0')}:${(d % 60).toString().padStart(2, '0')}`; }
 function showModal(id) { document.getElementById(id).classList.add('active'); }
 function hideModal(id) { document.getElementById(id).classList.remove('active'); }
